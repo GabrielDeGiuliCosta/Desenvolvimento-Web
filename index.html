@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colônia RPG — Fichas</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Colônia<span>RPG — Sistema de Fichas</span></div>
+  <div class="header-actions">
+    <button class="btn" onclick="exportarFichas()">Exportar JSON</button>
+    <button class="btn" onclick="importarFichas()">Importar JSON</button>
+    <button class="btn primary" onclick="novaFicha()">+ Nova Ficha</button>
+  </div>
+</header>
+
+<div class="tabs-bar" id="tabsBar"></div>
+<div class="main" id="mainContent">
+  <div class="empty-state"><h2>Nenhuma Ficha</h2><p>Clique em <strong>+ Nova Ficha</strong> para criar um protagonista.</p></div>
+</div>
+<input type="file" id="importInput" accept=".json" style="display:none" onchange="lerImportacao(event)">
+
+<script src="app.js"></script>
+</body>
+</html>

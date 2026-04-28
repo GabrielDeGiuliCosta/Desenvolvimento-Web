@@ -1066,5 +1066,12 @@ function lerImportacao(e) {
 function esc(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // INIT
-carregar(); renderizarTabs(); if(fichaAtiva)renderizarFichaAtiva();
-</script>
+carregar()
+renderizarTabs()
+if (fichaAtiva) renderizarFichaAtiva()
+
+// Deixa as funções acessíveis para o React
+window.novaFicha = novaFicha
+window.exportarFichas = exportarFichas
+window.importarFichas = importarFichas
+window.lerImportacao = lerImportacao

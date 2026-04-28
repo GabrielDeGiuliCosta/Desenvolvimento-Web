@@ -1,4 +1,4 @@
-  :root {
+ :root {
     --bg:#0e0e0e; --surface:#161616; --surface2:#1e1e1e; --surface3:#252525;
     --border:#2e2e2e; --border-accent:#444;
     --accent:#e8c84a; --accent2:#c0392b; --accent3:#4a9eff; --accent4:#2ecc71;
@@ -243,7 +243,6 @@
   .vd-card{background:var(--surface2);border:1px solid var(--border);padding:12px;}
 
   @media(max-width:700px){
-    .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
-    .contato-row{grid-template-columns:1fr;}
-  }
-</style>
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  .contato-row{grid-template-columns:1fr;}
+}

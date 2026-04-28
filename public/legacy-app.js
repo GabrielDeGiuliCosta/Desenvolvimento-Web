@@ -890,7 +890,8 @@ function calcularTotais() {
 
   f.bp_total = 5 + f.fisico + f.vigor + f.nivel;
   f.ce_total = f.nivel >= 4 ? 12 : 6;
-  f.defesa = f.fisico;
+  const temProtecaoLeve = f.protecoes?.some(p => p.nome === 'Proteção Leve');
+  f.defesa = temProtecaoLeve ? f.sagacidade : f.fisico;
   f.folego_total = Math.ceil(f.nivel / 2);
 
   salvar();

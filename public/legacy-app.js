@@ -374,7 +374,7 @@ function mudarPagina(p) { const f=getFicha(); if(!f)return; f._paginaAtiva=p; sa
 
 function buildFichaHTML(f) {
   const pages = ['principal','habilidades','recursos','combate','notas'];
-  const labels = ['Principal','Habilidades','Recursos','Combate','Notas'];
+  const labels = ['Principal','Habilidades','Recursos','Rolagens','Notas'];
   return `
   <div class="page-tabs">
     ${pages.map((p,i)=>`<button class="page-tab ${f._paginaAtiva===p?'active':''}" onclick="mudarPagina('${p}')">${labels[i]}</button>`).join('')}
@@ -450,9 +450,9 @@ function buildPrincipalHTML(f) {
 function buildAtributoHTML(nome, key, s1, s2, s3, f) {
   return `<div class="atributo-block">
     <div class="atributo-name">${nome}<input class="atributo-valor" type="number" min="1" max="5" value="${f[key]}" onchange="update('${key}',+this.value);calcularTotais()"></div>
-    <div class="subatributo-row"><span class="subatributo-nome">${s1[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s1[1]]}" onchange="update('${s1[1]}',+this.value)"></div>
-    <div class="subatributo-row"><span class="subatributo-nome">${s2[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s2[1]]}" onchange="update('${s2[1]}',+this.value)"></div>
-    <div class="subatributo-row"><span class="subatributo-nome">${s3[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s3[1]]}" onchange="update('${s3[1]}',+this.value)"></div>
+    <div class="subatributo-row"><span class="subatributo-nome">${s1[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s1[1]]}" onchange="update('${s1[1]}',+this.value);calcularTotais()"></div>
+    <div class="subatributo-row"><span class="subatributo-nome">${s2[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s2[1]]}" onchange="update('${s2[1]}',+this.value);calcularTotais()"></div>
+    <div class="subatributo-row"><span class="subatributo-nome">${s3[0]}</span><input class="subatributo-val" type="number" min="0" max="5" value="${f[s3[1]]}" onchange="update('${s3[1]}',+this.value);calcularTotais()"></div>
   </div>`;
 }
 
@@ -885,12 +885,16 @@ function update(key, value) {
 }
 
 function calcularTotais() {
-  const f = getFicha(); if(!f) return;
+  const f = getFicha(); 
+  if (!f) return;
+
   f.bp_total = 5 + f.fisico + f.vigor + f.nivel;
   f.ce_total = f.nivel >= 4 ? 12 : 6;
   f.defesa = f.fisico;
-  f.folego_total = Math.ceil(f.nivel/2);
+  f.folego_total = Math.ceil(f.nivel / 2);
+
   salvar();
+  renderizarFichaAtiva();
 }
 
 function ajustarDG(delta) {

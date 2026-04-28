@@ -2,6 +2,24 @@
 // DADOS DO SISTEMA
 // ══════════════════════════════════════════════════════
 
+const ARQUETIPOS_LISTA = [
+  'Rebelde',
+  'Expert',
+  'Renegado',
+  'Ativista',
+  'Malandro',
+  'Expressivo'
+];
+
+const DESCRICOES_ARQUETIPOS = {
+  Rebelde: 'Sempre que você lançar um DG com valor 6, você pode lançar mais um DG ao Teste ou à rolagem em questão sem gastar da Reserva.',
+  Expert: 'Sempre que você lançar um DG com valor 6, você pode refazer a rolagem de algum DG que faz parte da mesma rolagem.',
+  Renegado: 'Sempre que você lançar um DG com valor 6, você recupera uma Carga de Energia.',
+  Ativista: 'Sempre que você lançar um DG com valor 6, você adiciona um DG à Reserva.',
+  Malandro: 'Sempre que você lançar um DG com valor 6, você recupera o Uso de um Talento.',
+  Expressivo: 'Sempre que você lançar um DG com valor 6, você pode escolher um outro Protagonista para recuperar 1 Carga de Energia.',
+};
+
 const TALENTOS_LISTA = [
   // Rebelde
   {nome:'Intenso',origem:'Rebelde'},{nome:'Encrenqueiro',origem:'Rebelde'},{nome:'Ousado',origem:'Rebelde'},
@@ -321,7 +339,7 @@ function novaFicha() {
 function criarFichaVazia(id) {
   return {
     id, nome:'Novo Protagonista', jogador:'', nivel:1,
-    arquetipos:'', ocupacoes:'',
+    arquetipos:'', arquetipo1:'', arquetipo2:'', ocupacoes:'',
     fisico:1, potencia:0, agilidade:0, vigor:0,
     esperteza:1, informacoes:0, tecnologia:0, tecnica:0,
     sagacidade:1, percepcao:0, labia:0, intuicao:0,
@@ -387,6 +405,101 @@ function buildFichaHTML(f) {
   <div class="page-section ${f._paginaAtiva==='notas'?'active':''}" id="pg-notas"><div class="card"><div class="section-label">Anotações</div><textarea class="notes-area" rows="14" placeholder="Notas, história, descrição..." onchange="update('anotacoes',this.value)">${esc(f.anotacoes||'')}</textarea></div></div>`;
 }
 
+// ══════════════════════════════════════════════════════
+// ARUQÉTIPOS E OCUPAÇÕES
+// ══════════════════════════════════════════════════════
+function atualizarTextoArquetipos(f) {
+  if (!f) return;
+
+  if (f.nivel >= 4 && f.arquetipo2) {
+    f.arquetipos = `${f.arquetipo1} / ${f.arquetipo2}`;
+  } else {
+    f.arquetipos = f.arquetipo1 || '';
+  }
+}
+
+function atualizarArquetipo1(valor) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.arquetipo1 = valor;
+
+  if (f.arquetipo2 === valor) {
+    f.arquetipo2 = '';
+  }
+
+  atualizarTextoArquetipos(f);
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function atualizarArquetipo2(valor) {
+  const f = getFicha();
+  if (!f) return;
+
+  if (valor === f.arquetipo1) {
+    f.arquetipo2 = '';
+  } else {
+    f.arquetipo2 = valor;
+  }
+
+  atualizarTextoArquetipos(f);
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function atualizarNivel(valor) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.nivel = valor;
+
+  if (f.nivel < 4) {
+    f.arquetipo2 = '';
+  }
+
+  atualizarTextoArquetipos(f);
+  calcularTotais();
+}
+
+function buildDescricoesArquetiposHTML(f) {
+  const arquetiposSelecionados = [];
+
+  if (f.arquetipo1) {
+    arquetiposSelecionados.push(f.arquetipo1);
+  }
+
+  if (f.nivel >= 4 && f.arquetipo2) {
+    arquetiposSelecionados.push(f.arquetipo2);
+  }
+
+  if (arquetiposSelecionados.length === 0) {
+    return `
+      <div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px">
+        Nenhum arquétipo selecionado.
+      </div>
+    `;
+  }
+
+  return `
+    ${arquetiposSelecionados.map(a => `
+      <div class="card" style="background:var(--surface2);margin-bottom:10px">
+        <div class="section-label">${esc(a)}</div>
+        <p style="line-height:1.5;color:var(--text)">
+          ${esc(DESCRICOES_ARQUETIPOS[a] || 'Texto placeholder da gambiarra deste arquétipo.')}
+        </p>
+      </div>
+    `).join('')}
+
+    <div class="card" style="background:var(--surface3);margin-top:12px">
+      <div class="section-label">Lembrete</div>
+      <p style="line-height:1.5;color:var(--text-dim)">
+        Apenas um efeito de gambiarra de arquétipo pode ser aplicado por 6 rolado em dados de gambiarra.
+      </p>
+    </div>
+  `;
+}
+
 // ── PRINCIPAL ──
 function buildPrincipalHTML(f) {
   return `
@@ -398,11 +511,51 @@ function buildPrincipalHTML(f) {
         <div class="field"><label>Jogador</label><input type="text" value="${esc(f.jogador)}" oninput="update('jogador',this.value)"></div>
       </div>
       <div class="field-row">
-        <div class="field" style="flex:2"><label>Arquétipos</label><input type="text" value="${esc(f.arquetipos)}" oninput="update('arquetipos',this.value)"></div>
-        <div class="field"><label>Nível</label><input class="nivel-input" type="number" min="1" max="6" value="${f.nivel}" onchange="update('nivel',+this.value);calcularTotais()"></div>
+        <div class="field" style="flex:2">
+          <label>Arquétipo Inicial</label>
+            <select onchange="atualizarArquetipo1(this.value)">
+              <option value="">Selecione um arquétipo</option>
+        ${ARQUETIPOS_LISTA.map(a => `
+          <option value="${a}" ${f.arquetipo1 === a ? 'selected' : ''}>
+          ${a}
+          </option>
+        `).join('')}
+  </select>
+</div>
+
+${f.nivel >= 4 ? `
+  <div class="field" style="flex:2">
+    <label>Segundo Arquétipo</label>
+    <select onchange="atualizarArquetipo2(this.value)">
+      <option value="">Selecione outro arquétipo</option>
+      ${ARQUETIPOS_LISTA
+        .filter(a => a !== f.arquetipo1)
+        .map(a => `
+          <option value="${a}" ${f.arquetipo2 === a ? 'selected' : ''}>
+            ${a}
+          </option>
+        `).join('')}
+    </select>
+  </div>
+` : ''}
+        <div class="field"><label>Nível</label><input class="nivel-input" type="number" min="1" max="6" value="${f.nivel}" onchange="atualizarNivel(+this.value)"></div>
       </div>
     </div>
-    <div class="field"><label>Ocupações</label><input type="text" value="${esc(f.ocupacoes)}" oninput="update('ocupacoes',this.value)"></div>
+    <div class="field">
+  <label>Ocupação</label>
+  <select value="${esc(f.ocupacoes)}" onchange="update('ocupacoes',this.value)">
+    <option value="">Selecione uma ocupação</option>
+    <option value="Benzedeiro" ${f.ocupacoes === 'Benzedeiro' ? 'selected' : ''}>Benzedeiro</option>
+    <option value="Esportista" ${f.ocupacoes === 'Esportista' ? 'selected' : ''}>Esportista</option>
+    <option value="Guerrilheiro" ${f.ocupacoes === 'Guerrilheiro' ? 'selected' : ''}>Guerrilheiro</option>
+    <option value="Informista" ${f.ocupacoes === 'Informista' ? 'selected' : ''}>Informista</option>
+    <option value="Saqueador" ${f.ocupacoes === 'Saqueador' ? 'selected' : ''}>Saqueador</option>
+    <option value="Saltimbanco" ${f.ocupacoes === 'Saltimbanco' ? 'selected' : ''}>Saltimbanco</option>
+    <option value="Sucateiro" ${f.ocupacoes === 'Sucateiro' ? 'selected' : ''}>Sucateiro</option>
+    <option value="Tecnopata" ${f.ocupacoes === 'Tecnopata' ? 'selected' : ''}>Tecnopata</option>
+    <option value="Trapanet" ${f.ocupacoes === 'Trapanet' ? 'selected' : ''}>Trapanet</option>
+  </select>
+</div>
   </div>
 
   <div class="grid-4" style="margin-bottom:14px">
@@ -466,12 +619,15 @@ function buildHabilidadesHTML(f) {
   return `
   <div class="card">
     <div class="section-label">Habilidade de Arquétipo</div>
-    <div class="field"><label>Arquétipos</label><input type="text" value="${esc(f.arquetipos)}" oninput="update('arquetipos',this.value)" placeholder="Ex: Renegado / Expert"></div>
-    <div class="field"><label>Efeito da Gambiarra de Arquétipo</label><textarea class="mini-input" rows="2" onchange="update('hab_arquetipoDesc',this.value)">${esc(f.hab_arquetipoDesc||'')}</textarea></div>
+    <div class="field">
+     <label>Arquétipos</label>
+      <input type="text" value="${esc(f.arquetipos)}" disabled>
+    </div>
+    ${buildDescricoesArquetiposHTML(f)}
   </div>
 
-  <div class="card">
-    <div class="section-label">Habilidades</div>
+<div class="card">
+  <div class="section-label">Habilidades</div>
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'hab-ficha')">Na Ficha (${f.habilidades.length})</button>
       <button class="inner-tab" onclick="innerTab(this,'hab-lista')">Lista de Habilidades</button>
@@ -890,7 +1046,7 @@ function calcularTotais() {
 
   f.bp_total = 5 + f.fisico + f.vigor + f.nivel;
   f.ce_total = f.nivel >= 4 ? 12 : 6;
-  
+
   const protecoes = f.protecoes || [];
 
 const temProtecaoLeve = protecoes.some(p => p.nome === 'Proteção Leve');

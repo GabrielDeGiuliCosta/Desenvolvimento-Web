@@ -60,6 +60,18 @@ const MODS_TALENTO = [
   {nome:'Auxiliador', desc:'Escolha até dois outros Protagonistas para receberem Vantagem no próximo Teste que realizarem.'},
 ];
 
+const OCUPACOES_LISTA = [
+  'Benzedeiro',
+  'Esportista',
+  'Guerrilheiro',
+  'Informista',
+  'Saqueador',
+  'Saltimbanco',
+  'Sucateiro',
+  'Tecnopata',
+  'Trapanet'
+];
+
 const HABILIDADES_LISTA = [
   // BENZEDEIRO
   {nome:'Tratar Ferido',origem:'Benzedeiro',tipo:'Ativa',ce:2,nivel:1,
@@ -339,7 +351,7 @@ function novaFicha() {
 function criarFichaVazia(id) {
   return {
     id, nome:'Novo Protagonista', jogador:'', nivel:1,
-    arquetipos:'', arquetipo1:'', arquetipo2:'', ocupacoes:'',
+    arquetipos:'', arquetipo1:'', arquetipo2:'', ocupacoes:'', ocupacao1:'', ocupacao2:'', mostrarOcupacao2:false,
     fisico:1, potencia:0, agilidade:0, vigor:0,
     esperteza:1, informacoes:0, tecnologia:0, tecnica:0,
     sagacidade:1, percepcao:0, labia:0, intuicao:0,
@@ -406,7 +418,7 @@ function buildFichaHTML(f) {
 }
 
 // ══════════════════════════════════════════════════════
-// ARUQÉTIPOS E OCUPAÇÕES
+// ARUQÉTIPOS
 // ══════════════════════════════════════════════════════
 function atualizarTextoArquetipos(f) {
   if (!f) return;
@@ -500,6 +512,71 @@ function buildDescricoesArquetiposHTML(f) {
   `;
 }
 
+// ══════════════════════════════════════════════════════
+// OCUPAÇÕES
+// ══════════════════════════════════════════════════════
+function atualizarTextoOcupacoes(f) {
+  if (!f) return;
+
+  if (f.ocupacao2) {
+    f.ocupacoes = `${f.ocupacao1} / ${f.ocupacao2}`;
+  } else {
+    f.ocupacoes = f.ocupacao1 || '';
+  }
+}
+
+function atualizarOcupacao1(valor) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.ocupacao1 = valor;
+
+  if (f.ocupacao2 === valor) {
+    f.ocupacao2 = '';
+  }
+
+  atualizarTextoOcupacoes(f);
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function atualizarOcupacao2(valor) {
+  const f = getFicha();
+  if (!f) return;
+
+  if (valor === f.ocupacao1) {
+    f.ocupacao2 = '';
+  } else {
+    f.ocupacao2 = valor;
+  }
+
+  atualizarTextoOcupacoes(f);
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function mostrarSegundaOcupacao() {
+  const f = getFicha();
+  if (!f) return;
+
+  f.mostrarOcupacao2 = true;
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function removerSegundaOcupacao() {
+  const f = getFicha();
+  if (!f) return;
+
+  f.ocupacao2 = '';
+  f.mostrarOcupacao2 = false;
+
+  atualizarTextoOcupacoes(f);
+  salvar();
+  renderizarFichaAtiva();
+}
+
 // ── PRINCIPAL ──
 function buildPrincipalHTML(f) {
   return `
@@ -538,24 +615,52 @@ ${f.nivel >= 4 ? `
     </select>
   </div>
 ` : ''}
-        <div class="field"><label>Nível</label><input class="nivel-input" type="number" min="1" max="6" value="${f.nivel}" onchange="atualizarNivel(+this.value)"></div>
-      </div>
+      <div class="field"><label>Nível</label><input class="nivel-input" type="number" min="1" max="6" value="${f.nivel}" onchange="atualizarNivel(+this.value)"></div>
     </div>
-    <div class="field">
-  <label>Ocupação</label>
-  <select value="${esc(f.ocupacoes)}" onchange="update('ocupacoes',this.value)">
-    <option value="">Selecione uma ocupação</option>
-    <option value="Benzedeiro" ${f.ocupacoes === 'Benzedeiro' ? 'selected' : ''}>Benzedeiro</option>
-    <option value="Esportista" ${f.ocupacoes === 'Esportista' ? 'selected' : ''}>Esportista</option>
-    <option value="Guerrilheiro" ${f.ocupacoes === 'Guerrilheiro' ? 'selected' : ''}>Guerrilheiro</option>
-    <option value="Informista" ${f.ocupacoes === 'Informista' ? 'selected' : ''}>Informista</option>
-    <option value="Saqueador" ${f.ocupacoes === 'Saqueador' ? 'selected' : ''}>Saqueador</option>
-    <option value="Saltimbanco" ${f.ocupacoes === 'Saltimbanco' ? 'selected' : ''}>Saltimbanco</option>
-    <option value="Sucateiro" ${f.ocupacoes === 'Sucateiro' ? 'selected' : ''}>Sucateiro</option>
-    <option value="Tecnopata" ${f.ocupacoes === 'Tecnopata' ? 'selected' : ''}>Tecnopata</option>
-    <option value="Trapanet" ${f.ocupacoes === 'Trapanet' ? 'selected' : ''}>Trapanet</option>
-  </select>
-</div>
+  </div>
+  <div class="field-row">
+    <div class="field" style="flex:2">
+      <label>Ocupação</label>
+      <select onchange="atualizarOcupacao1(this.value)">
+        <option value="">Selecione uma ocupação</option>
+        ${OCUPACOES_LISTA
+          .filter(o => o !== f.ocupacao2)
+          .map(o => `
+            <option value="${o}" ${f.ocupacao1 === o ? 'selected' : ''}>
+              ${o}
+            </option>
+          `).join('')}
+      </select>
+    </div>
+
+    ${!f.mostrarOcupacao2 ? `
+      <div class="field" style="flex:0;align-self:end">
+        <button class="btn primary" type="button" onclick="mostrarSegundaOcupacao()">＋</button>
+      </div>
+    ` : ''}
+  </div>
+
+${f.mostrarOcupacao2 ? `
+  <div class="field-row">
+    <div class="field" style="flex:2">
+      <label>Segunda Ocupação</label>
+      <select onchange="atualizarOcupacao2(this.value)">
+        <option value="">Selecione outra ocupação</option>
+        ${OCUPACOES_LISTA
+          .filter(o => o !== f.ocupacao1)
+          .map(o => `
+            <option value="${o}" ${f.ocupacao2 === o ? 'selected' : ''}>
+              ${o}
+            </option>
+          `).join('')}
+      </select>
+    </div>
+
+    <div class="field" style="flex:0;align-self:end">
+      <button class="btn danger" type="button" onclick="removerSegundaOcupacao()">✕</button>
+    </div>
+  </div>
+` : ''}
   </div>
 
   <div class="grid-4" style="margin-bottom:14px">

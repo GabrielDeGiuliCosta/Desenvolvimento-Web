@@ -735,11 +735,15 @@ function buildHabilidadesHTML(f) {
   <div class="section-label">Habilidades</div>
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'hab-ficha')">Na Ficha (${f.habilidades.length})</button>
-      <button class="inner-tab" onclick="innerTab(this,'hab-lista')">Lista de Habilidades</button>
+      <button class="inner-tab" onclick="innerTab(this,'hab-ocupacao')">Habilidades de Ocupação</button>
+      <button class="inner-tab" onclick="innerTab(this,'hab-lista')">Todas as Habilidades</button>
     </div>
     <div class="inner-panel active" id="hab-ficha">
-      ${f.habilidades.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhuma habilidade. Use a aba "Lista de Habilidades" para adicionar.</div>`:''}
+      ${f.habilidades.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhuma habilidade. Use a aba "Habilidades de Ocupação" ou "Todas as Habilidades" para adicionar.</div>`:''}
       ${f.habilidades.map((h,i)=>buildHabSlotHTML(h,i)).join('')}
+    </div>
+    <div class="inner-panel" id="hab-ocupacao">
+      ${buildHabilidadesOcupacaoHTML(f)}
     </div>
     <div class="inner-panel" id="hab-lista">
       <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -820,6 +824,57 @@ function buildHabSlotHTML(h, i) {
           ⚡ Cibertreco: gaste DG igual ao custo de CE para ativar (1×/cena). Resultado 1 = Sobrecarga.
         </div>
       ` : ''}
+    </div>
+  `;
+}
+function buildHabilidadesOcupacaoHTML(f) {
+  const ocupacoesSelecionadas = [];
+
+  if (f.ocupacao1) {
+    ocupacoesSelecionadas.push(f.ocupacao1);
+  }
+
+  if (f.ocupacao2) {
+    ocupacoesSelecionadas.push(f.ocupacao2);
+  }
+
+  if (ocupacoesSelecionadas.length === 0) {
+    return `
+      <div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">
+        Escolha sua ocupação inicial na página Principal para ver as habilidades disponíveis.
+      </div>
+    `;
+  }
+
+  const habilidadesOcupacao = HABILIDADES_LISTA.filter(h =>
+    ocupacoesSelecionadas.includes(h.origem)
+  );
+
+  return `
+    <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input class="mini-input" style="max-width:220px" type="text" placeholder="Buscar habilidade..." oninput="filtrarLista('hab-ocupacao-items',this.value)">
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">
+        Mostrando habilidades de: ${ocupacoesSelecionadas.join(' / ')}
+      </span>
+    </div>
+
+    <div class="lista-selecao" id="hab-ocupacao-items">
+      ${habilidadesOcupacao.map(h => `
+        <div class="lista-item" onclick="adicionarHabilidade(${JSON.stringify(h).replace(/"/g,'&quot;')})">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div class="li-nome">${h.nome}</div>
+            <div class="li-origem">(${h.origem})</div>
+          </div>
+
+          <div class="li-tags">
+            <span class="li-tag ${h.tipo === 'Ativa' ? 'red' : h.tipo === 'Passiva' ? 'blue' : h.tipo === 'Desperta' ? '' : 'green'}">${h.tipo}</span>
+            <span class="li-tag accent">${h.ce} CE</span>
+            <span class="li-tag">Nível ${h.nivel}</span>
+          </div>
+
+          <div class="li-desc">${h.desc}</div>
+        </div>
+      `).join('')}
     </div>
   `;
 }

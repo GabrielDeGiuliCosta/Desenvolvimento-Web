@@ -963,7 +963,6 @@ function buildRecursosHTML(f) {
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'tal-ficha')">Na Ficha (${f.talentos.length})</button>
       <button class="inner-tab" onclick="innerTab(this,'tal-arquetipo')">Talentos de Arquétipo</button>
-      <button class="inner-tab" onclick="innerTab(this,'tal-mods')">Mods de Talento</button>
     </div>
     <div class="inner-panel active" id="tal-ficha">
       ${f.talentos.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhum talento. Use as abas acima para adicionar.</div>`:''}
@@ -988,16 +987,6 @@ function buildRecursosHTML(f) {
         </button>
       </div>
     </div>
-    <div class="inner-panel" id="tal-mods">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:1px">CLIQUE PARA APLICAR AO TALENTO MAIS RECENTE NA FICHA</div>
-      <div class="lista-selecao">
-        ${MODS_TALENTO.map(m=>`
-        <div class="mod-lista-item" onclick="adicionarModTalento(${JSON.stringify(m).replace(/"/g,'&quot;')})">
-          <div class="mod-nome">${m.nome}</div>
-          <div class="mod-desc">${m.desc}</div>
-        </div>`).join('')}
-      </div>
-    </div>
   </div>
 
   <!-- ARMAS -->
@@ -1006,7 +995,6 @@ function buildRecursosHTML(f) {
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'arm-ficha')">Na Ficha (${f.armas.length})</button>
       <button class="inner-tab" onclick="innerTab(this,'arm-lista')">Tipos de Arma</button>
-      <button class="inner-tab" onclick="innerTab(this,'arm-mods')">Mods de Arma</button>
     </div>
     <div class="inner-panel active" id="arm-ficha">
       ${f.armas.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhuma arma. Use as abas acima para adicionar.</div>`:''}
@@ -1027,16 +1015,6 @@ function buildRecursosHTML(f) {
         </div>`).join('')}
       </div>
     </div>
-    <div class="inner-panel" id="arm-mods">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:1px">CLIQUE PARA APLICAR À ÚLTIMA ARMA NA FICHA</div>
-      <div class="lista-selecao">
-        ${MODS_ARMA.map(m=>`
-        <div class="mod-lista-item" onclick="adicionarModArma(${JSON.stringify(m).replace(/"/g,'&quot;')})">
-          <div class="mod-nome">${m.nome}${m.restricao?` <span style="font-size:9px;color:var(--text-dim)">(${m.restricao})</span>`:''}</div>
-          <div class="mod-desc">${m.desc}</div>
-        </div>`).join('')}
-      </div>
-    </div>
   </div>
 
   <!-- PROTEÇÕES -->
@@ -1045,7 +1023,6 @@ function buildRecursosHTML(f) {
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'prot-ficha')">Na Ficha (${f.protecoes.length})</button>
       <button class="inner-tab" onclick="innerTab(this,'prot-lista')">Tipos de Proteção</button>
-      <button class="inner-tab" onclick="innerTab(this,'prot-mods')">Mods de Proteção</button>
     </div>
     <div class="inner-panel active" id="prot-ficha">
       ${f.protecoes.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhuma proteção. Use as abas acima para adicionar.</div>`:''}
@@ -1062,16 +1039,7 @@ function buildRecursosHTML(f) {
         </div>`).join('')}
       </div>
     </div>
-    <div class="inner-panel" id="prot-mods">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:1px">CLIQUE PARA APLICAR À ÚLTIMA PROTEÇÃO NA FICHA</div>
-      <div class="lista-selecao">
-        ${MODS_PROTECAO.map(m=>`
-        <div class="mod-lista-item" onclick="adicionarModProtecao(${JSON.stringify(m).replace(/"/g,'&quot;')})">
-          <div class="mod-nome">${m.nome}${m.restricao?` <span style="font-size:9px;color:var(--text-dim)">(${m.restricao})</span>`:''}</div>
-          <div class="mod-desc">${m.desc}</div>
-        </div>`).join('')}
-      </div>
-    </div>
+    </div
   </div>
 
   <!-- EQUIPAMENTOS -->
@@ -1080,7 +1048,6 @@ function buildRecursosHTML(f) {
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'eq-ficha')">Na Ficha (${f.equipamentos.length})</button>
       <button class="inner-tab" onclick="innerTab(this,'eq-lista')">Tipos de Equipamento</button>
-      <button class="inner-tab" onclick="innerTab(this,'eq-mods')">Mods de Equipamento</button>
     </div>
     <div class="inner-panel active" id="eq-ficha">
       ${f.equipamentos.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhum equipamento. Use as abas acima para adicionar.</div>`:''}
@@ -1095,12 +1062,6 @@ function buildRecursosHTML(f) {
           <div class="li-tags"><span class="li-tag">2 Usos</span></div>
           <div class="li-desc">${e.desc}</div>
         </div>`).join('')}
-      </div>
-    </div>
-    <div class="inner-panel" id="eq-mods">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:1px">CLIQUE PARA APLICAR AO ÚLTIMO EQUIPAMENTO NA FICHA</div>
-      <div class="lista-selecao" id="eq-mods-lista">
-        ${buildEquipModsHTML(f)}
       </div>
     </div>
   </div>
@@ -1173,66 +1134,260 @@ function buildEquipModsHTML(f) {
   </div>`).join('');
 }
 
+// Seleção de mods para talentos, armas, proteções e equipamentos
+function modToAttr(m) {
+  return JSON.stringify(m).replace(/"/g, '&quot;');
+}
+
+function toggleModSelector(tipo, i) {
+  const f = getFicha();
+  if (!f) return;
+
+  if (!f.modSelector) {
+    f.modSelector = { tipo: '', index: -1 };
+  }
+
+  if (f.modSelector.tipo === tipo && f.modSelector.index === i) {
+    f.modSelector = { tipo: '', index: -1 };
+  } else {
+    f.modSelector = { tipo, index: i };
+  }
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function buildModSelectorHTML(tipo, i, mods) {
+  const f = getFicha();
+  const aberto = f?.modSelector?.tipo === tipo && f?.modSelector?.index === i;
+
+  if (!aberto) return '';
+
+  if (!mods || mods.length === 0) {
+    return `
+      <div class="arma-mods">
+        <div class="arma-mods-title">Nenhum mod disponível</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="arma-mods">
+      <div class="arma-mods-title">Escolha um Mod</div>
+
+      <div class="lista-selecao" style="max-height:220px;margin-top:8px">
+        ${mods.map(m => `
+          <div class="mod-lista-item" onclick="adicionarModAoRecurso('${tipo}',${i},${modToAttr(m)})">
+            <div class="mod-nome">
+              ${esc(m.nome)}
+              ${m.restricao ? `<span style="font-size:9px;color:var(--text-dim)"> (${esc(m.restricao)})</span>` : ''}
+            </div>
+            <div class="mod-desc">${esc(m.desc)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function adicionarModAoRecurso(tipo, i, mod) {
+  const f = getFicha();
+  if (!f) return;
+
+  if (tipo === 'talento') {
+    const t = f.talentos[i];
+    if (!t) return;
+
+    t.mod = mod.desc;
+    t.modNome = mod.nome;
+  }
+
+  else if (tipo === 'arma') {
+    const a = f.armas[i];
+    if (!a) return;
+
+    if (!a.mods) a.mods = [];
+    a.mods.push(mod);
+  }
+
+  else if (tipo === 'protecao') {
+    const p = f.protecoes[i];
+    if (!p) return;
+
+    if (!p.mods) p.mods = [];
+    p.mods.push(mod);
+  }
+
+  else if (tipo === 'equipamento') {
+    const e = f.equipamentos[i];
+    if (!e) return;
+
+    e.mods = [mod];
+  }
+
+  f.modSelector = { tipo: '', index: -1 };
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
 // Slot de exibição de talento
 function buildTalentoSlotHTML(t, i) {
-  return `<div class="talento-slot">
-    <div class="talento-slot-header">
-      <input type="checkbox" class="talento-use" ${t.usado?'checked':''} title="Uso gasto" onchange="updateTalento(${i},'usado',this.checked)">
-      <div class="talento-info">
-        <div class="talento-nome-display">${esc(t.nome)||'—'}${t.origem?` <span class="talento-origem">(${t.origem})</span>`:''}</div>
-        ${t.mod?`<div class="talento-mod-display"><span class="talento-mod-nome">MOD — ${t.modNome||''}:</span> ${esc(t.mod)}</div>`:''}
+  return `
+    <div class="talento-slot">
+      <div class="talento-slot-header">
+        <input type="checkbox" class="talento-use" ${t.usado ? 'checked' : ''} title="Uso gasto" onchange="updateTalento(${i},'usado',this.checked)">
+
+        <div class="talento-info">
+          <div class="talento-nome-display">
+            ${esc(t.nome) || '—'}
+            ${t.origem ? ` <span class="talento-origem">(${esc(t.origem)})</span>` : ''}
+          </div>
+
+          ${t.mod ? `
+            <div class="talento-mod-display">
+              <span class="talento-mod-nome">MOD — ${esc(t.modNome || '')}:</span> ${esc(t.mod)}
+              <button class="mod-remove" onclick="removerModTalento(${i})">✕</button>
+            </div>
+          ` : ''}
+        </div>
+
+        <button class="btn sm" style="border-color:var(--accent3);color:var(--accent3)" onclick="toggleModSelector('talento',${i})">
+          Mod
+        </button>
+
+        <button class="remove-btn" onclick="removerTalento(${i})">✕</button>
       </div>
-      <button class="remove-btn" onclick="removerTalento(${i})">✕</button>
+
+      ${buildModSelectorHTML('talento', i, MODS_TALENTO)}
     </div>
-  </div>`;
+  `;
 }
 
 // Slot arma
 function buildArmaSlotHTML(a, i) {
-  const mods = (a.mods||[]);
-  return `<div class="arma-slot">
-    <div class="arma-slot-top">
-      <input class="mini-input" style="flex:1" type="text" value="${esc(a.nomeNarrativo||'')}" placeholder="Nome narrativo..." oninput="updateArma(${i},'nomeNarrativo',this.value)">
-      <span class="arma-tipo-badge">${esc(a.nome)}</span>
-      <span class="arma-poder">Poder: ${a.poderTotal!==undefined?a.poderTotal:a.poder}</span>
-      <button class="remove-btn" onclick="removerArma(${i})">✕</button>
+  const mods = a.mods || [];
+
+  return `
+    <div class="arma-slot">
+      <div class="arma-slot-top">
+        <input class="mini-input" style="flex:1" type="text" value="${esc(a.nomeNarrativo || '')}" placeholder="Nome narrativo..." oninput="updateArma(${i},'nomeNarrativo',this.value)">
+
+        <span class="arma-tipo-badge">${esc(a.nome)}</span>
+        <span class="arma-poder">Poder: ${a.poderTotal !== undefined ? a.poderTotal : a.poder}</span>
+
+        <button class="btn sm" style="border-color:var(--accent3);color:var(--accent3)" onclick="toggleModSelector('arma',${i})">
+          Mod
+        </button>
+
+        <button class="remove-btn" onclick="removerArma(${i})">✕</button>
+      </div>
+
+      <div class="arma-props">${esc(a.props || '')}</div>
+
+      ${mods.length ? `
+        <div class="arma-mods">
+          <div class="arma-mods-title">Mods Ativos</div>
+
+          ${mods.map((m, mi) => `
+            <div class="talento-mod-display">
+              <span class="talento-mod-nome">MOD — ${esc(m.nome)}:</span>
+              ${esc(m.desc || '')}
+              <button class="mod-remove" onclick="removerModArma(${i},${mi})">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${buildModSelectorHTML('arma', i, MODS_ARMA)}
     </div>
-    <div class="arma-props">${esc(a.props||'')}</div>
-    ${mods.length?`<div class="arma-mods"><div class="arma-mods-title">Mods Ativos</div>${mods.map((m,mi)=>`<span class="mod-badge">${esc(m.nome)}<button class="mod-remove" onclick="removerModArma(${i},${mi})">✕</button></span>`).join('')}</div>`:''}
-  </div>`;
+  `;
 }
 
 // Slot proteção
 function buildProtSlotHTML(p, i) {
-  const mods = (p.mods||[]);
-  return `<div class="prot-slot">
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-      <input class="mini-input" style="flex:1" type="text" value="${esc(p.nomeNarrativo||'')}" placeholder="Nome narrativo..." oninput="updateProtecao(${i},'nomeNarrativo',this.value)">
-      <span class="arma-tipo-badge">${esc(p.nome)}</span>
-      <span class="arma-poder" style="color:var(--accent4)">Defesa: +${p.bonusAtual!==undefined?p.bonusAtual:p.bonus}</span>
-      <button class="remove-btn" onclick="removerProtecao(${i})">✕</button>
+  const mods = p.mods || [];
+
+  return `
+    <div class="prot-slot">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+        <input class="mini-input" style="flex:1" type="text" value="${esc(p.nomeNarrativo || '')}" placeholder="Nome narrativo..." oninput="updateProtecao(${i},'nomeNarrativo',this.value)">
+
+        <span class="arma-tipo-badge">${esc(p.nome)}</span>
+        <span class="arma-poder" style="color:var(--accent4)">
+          Defesa: +${p.bonusAtual !== undefined ? p.bonusAtual : p.bonus}
+        </span>
+
+        <button class="btn sm" style="border-color:var(--accent3);color:var(--accent3)" onclick="toggleModSelector('protecao',${i})">
+          Mod
+        </button>
+
+        <button class="remove-btn" onclick="removerProtecao(${i})">✕</button>
+      </div>
+
+      <div class="arma-props">${esc(p.props || '')}</div>
+
+      ${mods.length ? `
+        <div class="arma-mods">
+          <div class="arma-mods-title">Mods Ativos</div>
+
+          ${mods.map((m, mi) => `
+            <div class="talento-mod-display">
+              <span class="talento-mod-nome">MOD — ${esc(m.nome)}:</span>
+              ${esc(m.desc || '')}
+              <button class="mod-remove" onclick="removerModProtecao(${i},${mi})">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${buildModSelectorHTML('protecao', i, MODS_PROTECAO)}
     </div>
-    <div class="arma-props">${esc(p.props||'')}</div>
-    ${mods.length?`<div class="arma-mods"><div class="arma-mods-title">Mods Ativos</div>${mods.map((m,mi)=>`<span class="mod-badge">${esc(m.nome)}<button class="mod-remove" onclick="removerModProtecao(${i},${mi})">✕</button></span>`).join('')}</div>`:''}
-  </div>`;
+  `;
 }
 
 // Slot equipamento
 function buildEquipSlotHTML(e, i) {
-  const mods = (e.mods||[]);
-  return `<div class="equip-slot">
-    <div class="equip-slot-top">
-      <input class="mini-input" style="flex:1" type="text" value="${esc(e.nomeNarrativo||'')}" placeholder="Nome narrativo..." oninput="updateEquip(${i},'nomeNarrativo',this.value)">
-      <span class="equip-tipo-badge">${esc(e.nome)}</span>
-      <div style="display:flex;gap:4px;align-items:center">
-        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">Usos:</span>
-        <input type="checkbox" class="uso-pip" ${e.uso1?'checked':''} onchange="updateEquip(${i},'uso1',this.checked)" title="Uso 1">
-        <input type="checkbox" class="uso-pip" ${e.uso2?'checked':''} onchange="updateEquip(${i},'uso2',this.checked)" title="Uso 2">
+  const mods = e.mods || [];
+  const modsDisponiveis = MODS_EQUIP[e.nome] || [];
+
+  return `
+    <div class="equip-slot">
+      <div class="equip-slot-top">
+        <input class="mini-input" style="flex:1" type="text" value="${esc(e.nomeNarrativo || '')}" placeholder="Nome narrativo..." oninput="updateEquip(${i},'nomeNarrativo',this.value)">
+
+        <span class="equip-tipo-badge">${esc(e.nome)}</span>
+
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">Usos:</span>
+          <input type="checkbox" class="uso-pip" ${e.uso1 ? 'checked' : ''} onchange="updateEquip(${i},'uso1',this.checked)" title="Uso 1">
+          <input type="checkbox" class="uso-pip" ${e.uso2 ? 'checked' : ''} onchange="updateEquip(${i},'uso2',this.checked)" title="Uso 2">
+        </div>
+
+        <button class="btn sm" style="border-color:var(--accent3);color:var(--accent3)" onclick="toggleModSelector('equipamento',${i})">
+          Mod
+        </button>
+
+        <button class="remove-btn" onclick="removerEquip(${i})">✕</button>
       </div>
-      <button class="remove-btn" onclick="removerEquip(${i})">✕</button>
+
+      ${mods.length ? `
+        <div class="arma-mods">
+          <div class="arma-mods-title">Mod Ativo</div>
+
+          ${mods.map((m, mi) => `
+            <div class="talento-mod-display">
+              <span class="talento-mod-nome">MOD — ${esc(m.nome)}:</span>
+              ${esc(m.desc || '')}
+              <button class="mod-remove" onclick="removerModEquip(${i},${mi})">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${buildModSelectorHTML('equipamento', i, modsDisponiveis)}
     </div>
-    ${mods.length?`<div class="arma-mods"><div class="arma-mods-title">Mods</div>${mods.map((m,mi)=>`<span class="mod-badge">${esc(m.nome)}<button class="mod-remove" onclick="removerModEquip(${i},${mi})">✕</button></span>`).join('')}</div>`:''}
-  </div>`;
+  `;
 }
 
 // ── COMBATE ──
@@ -1375,11 +1530,17 @@ function adicionarTalento(t) {
   f.talentos.push({nome:t.nome, origem:t.origem, usado:false, mod:'', modNome:''});
   salvar(); renderizarFichaAtiva();
 }
-function adicionarModTalento(m) {
-  const f = getFicha(); if(!f||!f.talentos.length) return;
-  const t = f.talentos[f.talentos.length-1];
-  t.mod = m.desc; t.modNome = m.nome;
-  salvar(); renderizarFichaAtiva();
+function removerModTalento(i) {
+  const f = getFicha();
+  if (!f) return;
+
+  if (!f.talentos[i]) return;
+
+  f.talentos[i].mod = '';
+  f.talentos[i].modNome = '';
+
+  salvar();
+  renderizarFichaAtiva();
 }
 function updateTalento(i, key, value) { const f=getFicha(); if(!f)return; f.talentos[i][key]=value; salvar(); }
 function removerTalento(i) { const f=getFicha(); if(!f)return; f.talentos.splice(i,1); salvar(); renderizarFichaAtiva(); }
@@ -1473,15 +1634,6 @@ function adicionarArma(a) {
   f.armas.push({...a, nomeNarrativo:'', mods:[], poderTotal:a.poder});
   salvar(); renderizarFichaAtiva();
 }
-function adicionarModArma(m) {
-  const f = getFicha(); if(!f||!f.armas.length) return;
-  const a = f.armas[f.armas.length-1];
-  if(!a.mods) a.mods=[];
-  a.mods.push(m);
-  // aplicar efeitos numéricos
-  if(m.nome==='Letal') { /* condicional, não aplica fixo */ }
-  salvar(); renderizarFichaAtiva();
-}
 function removerModArma(armaIdx, modIdx) { const f=getFicha(); if(!f)return; f.armas[armaIdx].mods.splice(modIdx,1); salvar(); renderizarFichaAtiva(); }
 function updateArma(i, key, value) { const f=getFicha(); if(!f)return; f.armas[i][key]=value; salvar(); }
 function removerArma(i) { const f=getFicha(); if(!f)return; f.armas.splice(i,1); salvar(); renderizarFichaAtiva(); }
@@ -1494,14 +1646,6 @@ function adicionarProtecao(p) {
   f.defesa = (f.fisico||1) + p.bonus;
   salvar(); renderizarFichaAtiva();
 }
-function adicionarModProtecao(m) {
-  const f = getFicha(); if(!f||!f.protecoes.length) return;
-  const p = f.protecoes[f.protecoes.length-1];
-  if(!p.mods) p.mods=[];
-  p.mods.push(m);
-  // Endodérmica não altera valor base
-  salvar(); renderizarFichaAtiva();
-}
 function removerModProtecao(pIdx, mIdx) { const f=getFicha(); if(!f)return; f.protecoes[pIdx].mods.splice(mIdx,1); salvar(); renderizarFichaAtiva(); }
 function updateProtecao(i, key, value) { const f=getFicha(); if(!f)return; f.protecoes[i][key]=value; salvar(); }
 function removerProtecao(i) { const f=getFicha(); if(!f)return; f.protecoes.splice(i,1); salvar(); renderizarFichaAtiva(); }
@@ -1510,13 +1654,6 @@ function removerProtecao(i) { const f=getFicha(); if(!f)return; f.protecoes.spli
 function adicionarEquip(e) {
   const f = getFicha(); if(!f) return;
   f.equipamentos.push({...e, nomeNarrativo:'', uso1:false, uso2:false, mods:[]});
-  salvar(); renderizarFichaAtiva();
-}
-function adicionarModEquip(m) {
-  const f = getFicha(); if(!f||!f.equipamentos.length) return;
-  const e = f.equipamentos[f.equipamentos.length-1];
-  if(!e.mods) e.mods=[];
-  e.mods.push(m);
   salvar(); renderizarFichaAtiva();
 }
 function removerModEquip(eIdx, mIdx) { const f=getFicha(); if(!f)return; f.equipamentos[eIdx].mods.splice(mIdx,1); salvar(); renderizarFichaAtiva(); }

@@ -661,19 +661,62 @@ function buildHabilidadesHTML(f) {
 }
 
 function buildHabSlotHTML(h, i) {
-  const tipoClass = h.tipo==='Ativa'?'ativa':h.tipo==='Passiva'?'passiva':h.tipo==='Desperta'?'desperta':'cibertreco';
-  return `<div class="hab-slot">
-    <div class="hab-slot-header">
-      <span class="hab-tipo-badge ${tipoClass}">${h.tipo||'?'}</span>
-      <span class="hab-nome-display">${esc(h.nome)}</span>
-      ${h.origem?`<span class="hab-origem">(${h.origem})</span>`:''}
-      ${h.ce!==undefined?`<span class="hab-ce">${h.ce} CE</span>`:''}
-      <button class="remove-btn" onclick="removerHabilidade(${i})">✕</button>
+  const tipoClass = h.tipo === 'Ativa'
+    ? 'ativa'
+    : h.tipo === 'Passiva'
+      ? 'passiva'
+      : h.tipo === 'Desperta'
+        ? 'desperta'
+        : 'cibertreco';
+
+  const modTexto = h.modDisponivel || h.mod || '';
+
+  return `
+    <div class="hab-slot">
+      <div class="hab-slot-header">
+        <span class="hab-tipo-badge ${tipoClass}">${h.tipo || '?'}</span>
+        <span class="hab-nome-display">${esc(h.nome)}</span>
+        ${h.origem ? `<span class="hab-origem">(${h.origem})</span>` : ''}
+        ${h.ce !== undefined ? `<span class="hab-ce">${h.ce} CE</span>` : ''}
+        <button class="remove-btn" onclick="removerHabilidade(${i})">✕</button>
+      </div>
+
+      <div class="hab-desc-text">${esc(h.desc || '')}</div>
+
+      ${modTexto ? `
+        <div style="margin-top:8px">
+          <button class="btn sm" onclick="mostrarModHabilidade(${i})">
+            ${h.modVisivel ? 'Ocultar Mod' : 'Ver Mod'}
+          </button>
+
+          ${h.modAtivo ? `
+            <button class="btn sm danger" onclick="removerModHabilidade(${i})">
+              Remover Mod
+            </button>
+          ` : h.modVisivel ? `
+            <button class="btn sm primary" onclick="adicionarModHabilidade(${i})">
+              Adicionar Mod
+            </button>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      ${modTexto && h.modVisivel ? `
+        <div class="hab-mod-section">
+          <div class="hab-mod-label-sm">
+            ${h.modAtivo ? 'MOD ADICIONADO' : 'MOD DISPONÍVEL'}
+          </div>
+          <div class="hab-mod-text">${esc(modTexto)}</div>
+        </div>
+      ` : ''}
+
+      ${h.tipo === 'Cibertreco' ? `
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-top:6px">
+          ⚡ Cibertreco: gaste DG igual ao custo de CE para ativar (1×/cena). Resultado 1 = Sobrecarga.
+        </div>
+      ` : ''}
     </div>
-    <div class="hab-desc-text">${esc(h.desc||'')}</div>
-    ${h.mod?`<div class="hab-mod-section"><div class="hab-mod-label-sm">MOD</div><div class="hab-mod-text">${esc(h.mod)}</div></div>`:''}
-    ${h.tipo==='Cibertreco'?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-top:6px">⚡ Cibertreco: gaste DG igual ao custo de CE para ativar (1×/cena). Resultado 1 = Sobrecarga.</div>`:''}
-  </div>`;
+  `;
 }
 
 // ── RECURSOS ──
@@ -1104,9 +1147,48 @@ function removerTalento(i) { const f=getFicha(); if(!f)return; f.talentos.splice
 
 // Habilidades
 function adicionarHabilidade(h) {
-  const f = getFicha(); if(!f) return;
-  f.habilidades.push({...h});
-  salvar(); renderizarFichaAtiva();
+  const f = getFicha(); 
+  if (!f) return;
+
+  f.habilidades.push({
+    ...h,
+    modDisponivel: h.mod || '',
+    modVisivel: false,
+    modAtivo: false
+  });
+
+  salvar(); 
+  renderizarFichaAtiva();
+}
+function mostrarModHabilidade(i) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.habilidades[i].modVisivel = !f.habilidades[i].modVisivel;
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function adicionarModHabilidade(i) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.habilidades[i].modAtivo = true;
+  f.habilidades[i].modVisivel = true;
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
+function removerModHabilidade(i) {
+  const f = getFicha();
+  if (!f) return;
+
+  f.habilidades[i].modAtivo = false;
+
+  salvar();
+  renderizarFichaAtiva();
 }
 function removerHabilidade(i) { const f=getFicha(); if(!f)return; f.habilidades.splice(i,1); salvar(); renderizarFichaAtiva(); }
 

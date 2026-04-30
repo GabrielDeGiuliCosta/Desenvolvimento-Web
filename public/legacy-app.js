@@ -514,6 +514,80 @@ function buildDescricoesArquetiposHTML(f) {
 }
 
 // ══════════════════════════════════════════════════════
+// TALENTOS
+// ══════════════════════════════════════════════════════
+function buildTalentosArquetipoHTML(f) {
+  const arquetiposSelecionados = [];
+
+  if (f.arquetipo1) {
+    arquetiposSelecionados.push(f.arquetipo1);
+  }
+
+  if (f.nivel >= 4 && f.arquetipo2) {
+    arquetiposSelecionados.push(f.arquetipo2);
+  }
+
+  if (arquetiposSelecionados.length === 0) {
+    return `
+      <div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">
+        Escolha seu arquétipo inicial na página Principal para ver os talentos disponíveis.
+      </div>
+    `;
+  }
+
+  const talentosArquetipo = TALENTOS_LISTA.filter(t =>
+    arquetiposSelecionados.includes(t.origem)
+  );
+
+  return `
+    <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input class="mini-input" style="max-width:220px" type="text" placeholder="Buscar talento..." oninput="filtrarLista('tal-arquetipo-items',this.value)">
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">
+        Mostrando talentos de: ${arquetiposSelecionados.join(' / ')}
+      </span>
+    </div>
+
+    <div class="lista-selecao" id="tal-arquetipo-items">
+      ${talentosArquetipo.map(t => `
+        <div class="lista-item" onclick="adicionarTalento(${JSON.stringify(t).replace(/"/g,'&quot;')})">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div class="li-nome">${t.nome}</div>
+            <div class="li-origem">(${t.origem})</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function adicionarTalentoCustom() {
+  const f = getFicha();
+  if (!f) return;
+
+  const nomeInput = document.getElementById('customTalentoNome');
+  const origemInput = document.getElementById('customTalentoOrigem');
+
+  const nome = nomeInput.value.trim();
+  const origem = origemInput.value.trim() || 'Custom';
+
+  if (!nome) {
+    alert('Digite o nome do talento custom.');
+    return;
+  }
+
+  f.talentos.push({
+    nome,
+    origem,
+    usado: false,
+    mod: '',
+    modNome: ''
+  });
+
+  salvar();
+  renderizarFichaAtiva();
+}
+
+// ══════════════════════════════════════════════════════
 // OCUPAÇÕES
 // ══════════════════════════════════════════════════════
 function atualizarTextoOcupacoes(f) {
@@ -720,7 +794,7 @@ function buildDGPips(f) {
   return Array.from({length:max}, (_,i)=>`<input type="checkbox" class="dg-pip" ${i<f.dg_reserva?'checked':''} onchange="setDG(${i},this.checked)">`).join('');
 }
 
-// ── HABILIDADES ──
+// ── HABILIDADES ─-
 function buildHabilidadesHTML(f) {
   return `
   <div class="card">
@@ -888,26 +962,30 @@ function buildRecursosHTML(f) {
     <div class="section-label">Talentos</div>
     <div class="inner-tabs">
       <button class="inner-tab active" onclick="innerTab(this,'tal-ficha')">Na Ficha (${f.talentos.length})</button>
-      <button class="inner-tab" onclick="innerTab(this,'tal-lista')">Lista de Talentos</button>
+      <button class="inner-tab" onclick="innerTab(this,'tal-arquetipo')">Talentos de Arquétipo</button>
       <button class="inner-tab" onclick="innerTab(this,'tal-mods')">Mods de Talento</button>
     </div>
     <div class="inner-panel active" id="tal-ficha">
       ${f.talentos.length===0?`<div style="color:var(--text-dim);font-family:var(--font-mono);font-size:12px;padding:10px 0">Nenhum talento. Use as abas acima para adicionar.</div>`:''}
       ${f.talentos.map((t,i)=>buildTalentoSlotHTML(t,i)).join('')}
     </div>
-    <div class="inner-panel" id="tal-lista">
-      <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <input class="mini-input" style="max-width:220px" type="text" placeholder="Buscar talento..." oninput="filtrarLista('tal-lista-items',this.value)">
-        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">Clique para adicionar à ficha</span>
-      </div>
-      <div class="lista-selecao" id="tal-lista-items">
-        ${TALENTOS_LISTA.map(t=>`
-        <div class="lista-item" onclick="adicionarTalento(${JSON.stringify(t).replace(/"/g,'&quot;')})">
-          <div style="display:flex;align-items:baseline;gap:8px">
-            <div class="li-nome">${t.nome}</div>
-            <div class="li-origem">(${t.origem})</div>
+    <div class="inner-panel" id="tal-arquetipo">
+      ${buildTalentosArquetipoHTML(f)}
+      <div class="card" style="background:var(--surface2);margin-top:14px">
+        <div class="section-label">Talento Custom</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Nome</label>
+            <input id="customTalentoNome" type="text" placeholder="Nome do talento">
           </div>
-        </div>`).join('')}
+        <div class="field">
+          <label>Origem</label>
+          <input id="customTalentoOrigem" type="text" placeholder="Ex: Custom">
+        </div>
+      </div>
+        <button class="add-row-btn" onclick="adicionarTalentoCustom()">
+          + Adicionar Talento Custom
+        </button>
       </div>
     </div>
     <div class="inner-panel" id="tal-mods">

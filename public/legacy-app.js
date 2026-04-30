@@ -535,8 +535,9 @@ function buildTalentosArquetipoHTML(f) {
     `;
   }
 
-  const talentosArquetipo = TALENTOS_LISTA.filter(t =>
-    arquetiposSelecionados.includes(t.origem)
+  const talentosArquetipo = getTalentosDisponiveis(
+    f,
+    TALENTOS_LISTA.filter(t => arquetiposSelecionados.includes(t.origem))
   );
 
   return `
@@ -790,11 +791,57 @@ function buildAtributoHTML(nome, key, s1, s2, s3, f) {
 }
 
 function buildDGPips(f) {
-  const max = Math.max(f.dg_reserva, 12);
-  return Array.from({length:max}, (_,i)=>`<input type="checkbox" class="dg-pip" ${i<f.dg_reserva?'checked':''} onchange="setDG(${i},this.checked)">`).join('');
+  const max = 18;
+  f.dg_reserva = Math.min(f.dg_reserva, max);
+
+  return Array.from({ length: max }, (_, i) => `
+    <input 
+      type="checkbox" 
+      class="dg-pip" 
+      ${i < f.dg_reserva ? 'checked' : ''} 
+      onchange="setDG(${i},this.checked)"
+    >
+  `).join('');
 }
 
 // ── HABILIDADES ─-
+function jaTemPorNome(lista, nome) {
+  return lista.some(item => item.nome === nome);
+}
+function getHabilidadesDisponiveis(f, lista) {
+  return lista.filter(h => !jaTemPorNome(f.habilidades, h.nome));
+}
+function getTalentosDisponiveis(f, lista) {
+  return lista.filter(t => !jaTemPorNome(f.talentos, t.nome));
+}
+function getModsDisponiveis(tipo, i, mods) {
+  const f = getFicha();
+  if (!f) return mods;
+
+  if (tipo === 'talento') {
+    const t = f.talentos[i];
+    if (!t || !t.modNome) return mods;
+    return mods.filter(m => m.nome !== t.modNome);
+  }
+
+  if (tipo === 'arma') {
+    const atuais = f.armas[i]?.mods || [];
+    return mods.filter(m => !jaTemPorNome(atuais, m.nome));
+  }
+
+  if (tipo === 'protecao') {
+    const atuais = f.protecoes[i]?.mods || [];
+    return mods.filter(m => !jaTemPorNome(atuais, m.nome));
+  }
+
+  if (tipo === 'equipamento') {
+    const atuais = f.equipamentos[i]?.mods || [];
+    return mods.filter(m => !jaTemPorNome(atuais, m.nome));
+  }
+
+  return mods;
+}
+
 function buildHabilidadesHTML(f) {
   return `
   <div class="card">
@@ -826,7 +873,7 @@ function buildHabilidadesHTML(f) {
         <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">Clique para adicionar à ficha</span>
       </div>
       <div class="lista-selecao" id="hab-lista-items">
-        ${HABILIDADES_LISTA.map(h=>`
+        ${getHabilidadesDisponiveis(f, HABILIDADES_LISTA).map(h=>`
         <div class="lista-item" onclick="adicionarHabilidade(${JSON.stringify(h).replace(/"/g,'&quot;')})">
           <div style="display:flex;align-items:baseline;gap:8px">
             <div class="li-nome">${h.nome}</div>
@@ -921,8 +968,9 @@ function buildHabilidadesOcupacaoHTML(f) {
     `;
   }
 
-  const habilidadesOcupacao = HABILIDADES_LISTA.filter(h =>
-    ocupacoesSelecionadas.includes(h.origem)
+  const habilidadesOcupacao = getHabilidadesDisponiveis(
+    f,
+    HABILIDADES_LISTA.filter(h => ocupacoesSelecionadas.includes(h.origem))
   );
 
   return `
@@ -1160,6 +1208,8 @@ function toggleModSelector(tipo, i) {
 function buildModSelectorHTML(tipo, i, mods) {
   const f = getFicha();
   const aberto = f?.modSelector?.tipo === tipo && f?.modSelector?.index === i;
+
+  mods = getModsDisponiveis(tipo, i, mods);
 
   if (!aberto) return '';
 
@@ -1507,21 +1557,33 @@ if (temProtecaoPesada) {
 }
 
 function ajustarDG(delta) {
-  const f = getFicha(); if(!f) return;
-  f.dg_reserva = Math.max(0, f.dg_reserva + delta);
+  const f = getFicha(); 
+  if (!f) return;
+
+  f.dg_reserva = Math.max(0, Math.min(18, f.dg_reserva + delta));
+
   salvar();
+
   const c = document.getElementById('dg-pips');
   const cnt = document.getElementById('dg-count');
-  if(c) c.innerHTML = buildDGPips(f);
-  if(cnt) cnt.textContent = f.dg_reserva+' DG';
+
+  if (c) c.innerHTML = buildDGPips(f);
+  if (cnt) cnt.textContent = f.dg_reserva + ' DG';
 }
 
 function setDG(idx, checked) {
-  const f = getFicha(); if(!f) return;
-  f.dg_reserva = checked ? Math.max(f.dg_reserva, idx+1) : idx;
+  const f = getFicha(); 
+  if (!f) return;
+
+  f.dg_reserva = checked ? Math.min(18, idx + 1) : idx;
+
   salvar();
+
+  const c = document.getElementById('dg-pips');
   const cnt = document.getElementById('dg-count');
-  if(cnt) cnt.textContent = f.dg_reserva+' DG';
+
+  if (c) c.innerHTML = buildDGPips(f);
+  if (cnt) cnt.textContent = f.dg_reserva + ' DG';
 }
 
 // Talentos

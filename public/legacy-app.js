@@ -62,6 +62,7 @@ const MODS_TALENTO = [
 
 const OCUPACOES_LISTA = [
   'Benzedeiro',
+  'Ciborgue',
   'Esportista',
   'Guerrilheiro',
   'Informista',
@@ -1309,6 +1310,42 @@ function removerTalento(i) { const f=getFicha(); if(!f)return; f.talentos.splice
 function adicionarHabilidade(h) {
   const f = getFicha(); 
   if (!f) return;
+
+  const origemHab = h.origem;
+
+  const ocupacoesAtuais = [f.ocupacao1, f.ocupacao2].filter(Boolean);
+
+  const habilidadeEhDaOcupacao = ocupacoesAtuais.includes(origemHab);
+
+  if (!habilidadeEhDaOcupacao) {
+    if (ocupacoesAtuais.length === 0) {
+    f.ocupacao1 = origemHab;
+    atualizarTextoOcupacoes(f);
+
+    alert(`A ocupação "${origemHab}" foi adicionada automaticamente como ocupação inicial.`);
+    }
+
+    else if (ocupacoesAtuais.length === 1) {
+      f.ocupacao2 = origemHab;
+      f.mostrarOcupacao2 = true;
+      atualizarTextoOcupacoes(f);
+
+      alert(`A ocupação "${origemHab}" foi adicionada automaticamente como segunda ocupação.`);
+    } 
+    
+    else if (ocupacoesAtuais.length >= 2) {
+      const confirmar = confirm(
+        `Este personagem já possui duas ocupações: ${f.ocupacao1} e ${f.ocupacao2}.\n\n` +
+        `A habilidade "${h.nome}" pertence à ocupação "${origemHab}".\n\n` +
+        `Um personagem normalmente não pode ter habilidades de uma terceira ocupação.\n\n` +
+        `Deseja adicionar mesmo assim?`
+      );
+
+      if (!confirmar) {
+        return;
+      }
+    }
+  }
 
   f.habilidades.push({
     ...h,

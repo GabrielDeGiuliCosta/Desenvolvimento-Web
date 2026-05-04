@@ -11,6 +11,113 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;}
 
+  /*HOMEPAGE*/
+  .auth-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 24px;
+}
+
+.auth-card h1 {
+  font-family: var(--font-display);
+  font-size: 42px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.auth-card p {
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.auth-tabs button {
+  flex: 1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px;
+  cursor: pointer;
+}
+
+.auth-tabs button.active {
+  background: var(--accent);
+  color: #111;
+  border-color: var(--accent);
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-card input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  padding: 10px;
+  outline: none;
+}
+
+.auth-card input:focus {
+  border-color: var(--accent);
+}
+
+.auth-card .btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.auth-error {
+  border: 1px solid var(--accent2);
+  color: var(--accent2);
+  padding: 8px;
+  font-size: 12px;
+}
+
+.guest-warning {
+  margin-top: 16px;
+  padding: 10px;
+  border: 1px solid var(--border-accent);
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.guest-header-warning {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  padding: 5px 8px;
+}
+
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:6px;height:6px;}
   ::-webkit-scrollbar-track{background:var(--bg);}

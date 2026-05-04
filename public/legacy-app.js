@@ -1452,7 +1452,14 @@ function buildCombateHTML(f) {
         </select>
       </div>
       <div class="field" style="width:80px;margin-bottom:0"><label>Extras</label><input class="mini-input" type="number" id="roll-extra" value="0" min="0" oninput="calcRollPool()"></div>
-      <div class="field" style="width:70px;margin-bottom:0"><label>DG</label><input class="mini-input" type="number" id="roll-dg" value="0" min="0" oninput="calcRollPool()"></div>
+      <div class="field" style="width:95px;margin-bottom:0">
+        <label>DG Reserva</label>
+        <input class="mini-input" type="number" id="roll-dg-reserva" value="0" min="0" oninput="calcRollPool()">
+      </div>
+      <div class="field" style="width:110px;margin-bottom:0">
+        <label>DG Habilidade</label>
+        <input class="mini-input" type="number" id="roll-dg-habilidade" value="0" min="0" oninput="calcRollPool()">
+      </div>
       <div class="field" style="min-width:180px;margin-bottom:0"><label>Modo</label>
         <select class="mini-input" id="roll-vantagem">
           <option value="normal">Normal (4+)</option>
@@ -1734,46 +1741,175 @@ function updateDroneFuncao(i, value) { const f=getFicha(); if(!f)return; f.drone
 // ══════════════════════════════════════════════════════
 // ROLAGEM
 // ══════════════════════════════════════════════════════
+function atributoTemCicatriz(f, atributo) {
+  const mapa = {
+    fisico: 'cic_fisico',
+    esperteza: 'cic_esperteza',
+    sagacidade: 'cic_sagacidade'
+  };
+
+  return !!f[mapa[atributo]];
+}
 function calcRollPool() {
-  const f=getFicha(); if(!f)return;
+  const f = getFicha(); 
+  if (!f) return;
+
   const sub = document.getElementById('roll-sub');
   const extra = document.getElementById('roll-extra');
-  const dg = document.getElementById('roll-dg');
+  const dgReserva = document.getElementById('roll-dg-reserva');
+  const dgHabilidade = document.getElementById('roll-dg-habilidade');
   const info = document.getElementById('roll-pool-info');
-  if(!sub||!info)return;
-  const atrMap = {potencia:'fisico',agilidade:'fisico',vigor:'fisico',informacoes:'esperteza',tecnologia:'esperteza',tecnica:'esperteza',percepcao:'sagacidade',labia:'sagacidade',intuicao:'sagacidade'};
+
+  if (!sub || !info) return;
+
+  const atrMap = {
+    potencia: 'fisico',
+    agilidade: 'fisico',
+    vigor: 'fisico',
+    informacoes: 'esperteza',
+    tecnologia: 'esperteza',
+    tecnica: 'esperteza',
+    percepcao: 'sagacidade',
+    labia: 'sagacidade',
+    intuicao: 'sagacidade'
+  };
+
   const sk = sub.value;
   const ak = atrMap[sk];
-  const av = f[ak]||0, sv = f[sk]||0, ev = parseInt(extra?.value||0), dv = parseInt(dg?.value||0);
-  info.textContent = `Pool: ${av} (${ak}) + ${sv} (sub) + ${ev} (extra) + ${dv} (DG) = ${av+sv+ev+dv} dados`;
+
+  const av = f[ak] || 0;
+  const sv = f[sk] || 0;
+  const ev = parseInt(extra?.value || 0);
+  const dgr = parseInt(dgReserva?.value || 0);
+  const dgh = parseInt(dgHabilidade?.value || 0);
+  const dgTotal = dgr + dgh;
+
+  const avisoCicatriz = atributoTemCicatriz(f, ak)
+    ? ' | Cicatriz: desastre em DG com 1 ou 2'
+    : '';
+
+  info.textContent = `Pool: ${av} (${ak}) + ${sv} (sub) + ${ev} (extra) + ${dgTotal} DG = ${av + sv + ev + dgTotal} dados${avisoCicatriz}`;
 }
 
 function realizarRolagem() {
-  const f=getFicha(); if(!f)return;
-  const sub=document.getElementById('roll-sub').value;
-  const extra=parseInt(document.getElementById('roll-extra').value||0);
-  const dgQtd=parseInt(document.getElementById('roll-dg').value||0);
-  const vant=document.getElementById('roll-vantagem').value;
-  const dif=parseInt(document.getElementById('roll-dificuldade').value||1);
-  const atrMap={potencia:'fisico',agilidade:'fisico',vigor:'fisico',informacoes:'esperteza',tecnologia:'esperteza',tecnica:'esperteza',percepcao:'sagacidade',labia:'sagacidade',intuicao:'sagacidade'};
-  const total=(f[atrMap[sub]]||0)+(f[sub]||0)+extra;
-  const isSucc = v => vant==='vantagem'?v>=3:vant==='desvantagem'?v>=5:v>=4;
-  const rolar = n => Array.from({length:n},()=>Math.ceil(Math.random()*6));
-  const res=rolar(total), dgRes=rolar(dgQtd);
-  let suc=0, newDG=0, desastres=0;
-  res.forEach(v=>{if(isSucc(v))suc++;if(v===6)newDG++;});
-  dgRes.forEach(v=>{if(isSucc(v))suc++;if(v===6)newDG++;if(v===1){desastres++;suc=Math.max(0,suc-1);}});
-  if(newDG>0){ f.dg_reserva+=newDG; salvar(); const c=document.getElementById('dg-pips'),cnt=document.getElementById('dg-count'); if(c)c.innerHTML=buildDGPips(f); if(cnt)cnt.textContent=f.dg_reserva+' DG'; }
-  let html='';
-  res.forEach(v=>{ const s=isSucc(v); html+=`<div class="die ${v===6?'adv':s?'success':'fail'}">${v}</div>`; });
-  if(dgRes.length){ html+=`<div style="display:flex;align-items:center;margin:0 3px;font-family:var(--font-mono);font-size:10px;color:var(--accent3)">DG→</div>`; dgRes.forEach(v=>{ html+=`<div class="die ${v===1?'disaster':v===6?'adv':isSucc(v)?'gambiarra-die':'fail'}">${v}</div>`; }); }
-  document.getElementById('roll-dice').innerHTML=html;
-  const passou=suc>=dif;
-  let msg=`${suc} Sucesso${suc!==1?'s':''} / DT ${dif} — <strong>${passou?'✓ SUCESSO':'✗ FALHA'}</strong>`;
-  if(suc>dif) msg+=` (+${suc-dif} extra)`;
-  if(newDG>0) msg+=` | +${newDG} DG à Reserva`;
-  if(desastres>0) msg+=` | ⚠ ${desastres} Desastre${desastres>1?'s':''}!`;
-  document.getElementById('roll-result').innerHTML=`<span style="color:${passou?'var(--accent)':'var(--accent2)'};font-size:14px">${msg}</span>`;
+  const f = getFicha(); 
+  if (!f) return;
+
+  const sub = document.getElementById('roll-sub').value;
+  const extra = parseInt(document.getElementById('roll-extra').value || 0);
+  const dgReserva = parseInt(document.getElementById('roll-dg-reserva').value || 0);
+  const dgHabilidade = parseInt(document.getElementById('roll-dg-habilidade').value || 0);
+  const dgQtd = dgReserva + dgHabilidade;
+
+  const vant = document.getElementById('roll-vantagem').value;
+  const dif = parseInt(document.getElementById('roll-dificuldade').value || 1);
+
+  if (dgReserva > f.dg_reserva) {
+    alert(`Você tentou usar ${dgReserva} DG da reserva, mas possui apenas ${f.dg_reserva}.`);
+    return;
+  }
+
+  const atrMap = {
+    potencia: 'fisico',
+    agilidade: 'fisico',
+    vigor: 'fisico',
+    informacoes: 'esperteza',
+    tecnologia: 'esperteza',
+    tecnica: 'esperteza',
+    percepcao: 'sagacidade',
+    labia: 'sagacidade',
+    intuicao: 'sagacidade'
+  };
+
+  const atributoBase = atrMap[sub];
+  const total = (f[atributoBase] || 0) + (f[sub] || 0) + extra;
+
+  const temCicatriz = atributoTemCicatriz(f, atributoBase);
+
+  const isSucc = v => vant === 'vantagem'
+    ? v >= 3
+    : vant === 'desvantagem'
+      ? v >= 5
+      : v >= 4;
+
+  const isDesastreDG = v => temCicatriz
+    ? v === 1 || v === 2
+    : v === 1;
+
+  const rolar = n => Array.from({ length: n }, () => Math.ceil(Math.random() * 6));
+
+  const res = rolar(total);
+  const dgRes = rolar(dgQtd);
+
+  let suc = 0;
+  let newDG = 0;
+  let desastres = 0;
+
+  res.forEach(v => {
+    if (isSucc(v)) suc++;
+    if (v === 6) newDG++;
+  });
+
+  dgRes.forEach(v => {
+    if (isSucc(v)) suc++;
+    if (v === 6) newDG++;
+
+    if (isDesastreDG(v)) {
+      desastres++;
+      suc = Math.max(0, suc - 1);
+    }
+  });
+
+  if (dgReserva > 0) {
+    f.dg_reserva = Math.max(0, f.dg_reserva - dgReserva);
+  }
+
+  if (desastres > 0) {
+    f.ce_atual = Math.max(0, (f.ce_atual || 0) - desastres);
+  }
+
+  if (newDG > 0) {
+    f.dg_reserva += newDG;
+  }
+
+  salvar();
+
+  const c = document.getElementById('dg-pips');
+  const cnt = document.getElementById('dg-count');
+
+  if (c) c.innerHTML = buildDGPips(f);
+  if (cnt) cnt.textContent = f.dg_reserva + ' DG';
+
+  let html = '';
+
+  res.forEach(v => {
+    const s = isSucc(v);
+    html += `<div class="die ${v === 6 ? 'adv' : s ? 'success' : 'fail'}">${v}</div>`;
+  });
+
+  if (dgRes.length) {
+    html += `<div style="display:flex;align-items:center;margin:0 3px;font-family:var(--font-mono);font-size:10px;color:var(--accent3)">DG→</div>`;
+
+    dgRes.forEach(v => {
+      html += `<div class="die ${isDesastreDG(v) ? 'disaster' : v === 6 ? 'adv' : isSucc(v) ? 'gambiarra-die' : 'fail'}">${v}</div>`;
+    });
+  }
+
+  document.getElementById('roll-dice').innerHTML = html;
+
+  const passou = suc >= dif;
+
+  let msg = `${suc} Sucesso${suc !== 1 ? 's' : ''} / DT ${dif} — <strong>${passou ? '✓ SUCESSO' : '✗ FALHA'}</strong>`;
+
+  if (suc > dif) msg += ` (+${suc - dif} extra)`;
+  if (dgReserva > 0) msg += ` | -${dgReserva} DG da Reserva`;
+  if (newDG > 0) msg += ` | +${newDG} DG à Reserva`;
+  if (desastres > 0) msg += ` | ⚠ ${desastres} Desastre${desastres > 1 ? 's' : ''} | -${desastres} CE`;
+
+  document.getElementById('roll-result').innerHTML =
+    `<span style="color:${passou ? 'var(--accent)' : 'var(--accent2)'};font-size:14px">${msg}</span>`;
+
+  calcRollPool();
 }
 
 // ══════════════════════════════════════════════════════

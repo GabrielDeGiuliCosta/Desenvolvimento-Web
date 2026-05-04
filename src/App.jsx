@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import AuthHome from './AuthHome'
-import { createSheet, getSheets, getToken, removeToken } from './services/api'
+import { createSheet, getSheets, getToken, removeToken, syncSheet } from './services/api'
 
 function App() {
   const [authChecked, setAuthChecked] = useState(false)
@@ -21,6 +21,26 @@ function App() {
       carregarLegacyApp()
     }
   }, [modoApp])
+
+  useEffect(() => {
+    window.syncFichaComBackend = async function (ficha) {
+      const token = localStorage.getItem('token')
+      const guestMode = localStorage.getItem('guestMode') === 'true'
+
+      if (!token || guestMode || !ficha) return
+
+      try {
+        await syncSheet(ficha)
+        console.log('Ficha sincronizada:', ficha.nome || ficha.id)
+      } catch (error) {
+        console.error('Erro ao sincronizar ficha:', error)
+      }
+    }
+
+    return () => {
+      delete window.syncFichaComBackend
+    }
+  }, [])
 
   function carregarLegacyApp() {
     const scriptId = 'legacy-app-script'

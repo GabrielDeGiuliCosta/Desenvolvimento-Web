@@ -61,3 +61,14 @@ export async function createSheet(title, data) {
     body: JSON.stringify({ title, data })
   })
 }
+
+export async function syncSheet(sheet) {
+  return apiRequest('/sheets/sync', {
+    method: 'POST',
+    body: JSON.stringify({
+      localId: String(sheet.id),
+      title: sheet.nome || sheet.name || 'Ficha sem nome',
+      data: sheet
+    })
+  })
+}

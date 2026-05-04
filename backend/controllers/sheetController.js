@@ -126,10 +126,49 @@ async function deleteSheet(req, res) {
   }
 }
 
+async function syncSheet(req, res) {
+  try {
+    const { localId, title, data } = req.body
+
+    if (!localId || !title || !data) {
+      return res.status(400).json({
+        message: 'localId, title e data são obrigatórios.'
+      })
+    }
+
+    const sheet = await prisma.sheet.upsert({
+      where: {
+        userId_localId: {
+          userId: req.user.id,
+          localId
+        }
+      },
+      update: {
+        title,
+        data
+      },
+      create: {
+        localId,
+        title,
+        data,
+        userId: req.user.id
+      }
+    })
+
+    return res.json(sheet)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({
+      message: 'Erro ao sincronizar ficha.'
+    })
+  }
+}
+
 module.exports = {
   getSheets,
   createSheet,
   getSheetById,
   updateSheet,
-  deleteSheet
+  deleteSheet,
+  syncSheet
 }

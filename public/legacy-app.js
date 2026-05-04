@@ -370,7 +370,25 @@ function criarFichaVazia(id) {
 }
 
 function getFicha() { return fichas.find(f=>f.id===fichaAtiva); }
-function salvar() { try{ localStorage.setItem('colonia_fichas', JSON.stringify(fichas)); }catch(e){} }
+let syncTimer = null;
+
+function salvar() {
+  try {
+    localStorage.setItem('colonia_fichas', JSON.stringify(fichas));
+  } catch (e) {}
+
+  const ficha = getFicha();
+
+  if (syncTimer) {
+    clearTimeout(syncTimer);
+  }
+
+  syncTimer = setTimeout(() => {
+    if (window.syncFichaComBackend && ficha) {
+      window.syncFichaComBackend(ficha);
+    }
+  }, 600);
+}
 function carregar() { try{ const d=localStorage.getItem('colonia_fichas'); if(d){ fichas=JSON.parse(d); if(fichas.length) fichaAtiva=fichas[0].id; } }catch(e){} }
 
 // ══════════════════════════════════════════════════════

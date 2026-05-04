@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AuthHome from './AuthHome'
+import UserPanel from './UserPanel'
 import { getSheets, getToken, removeToken, syncSheet, deleteSheet } from './services/api'
 
 function App() {
   const [authChecked, setAuthChecked] = useState(false)
   const [modoApp, setModoApp] = useState(null)
+  const [personagens, setPersonagens] = useState([])
+  const pendingActionRef = useRef(null)
 
   useEffect(() => {
     const token = getToken()
@@ -19,6 +22,22 @@ function App() {
   useEffect(() => {
     if (modoApp === 'app') {
       carregarLegacyApp()
+
+      setTimeout(() => {
+        const action = pendingActionRef.current
+
+        if (!action) return
+
+        if (action.type === 'new') {
+          window.novaFicha?.()
+        }
+
+        if (action.type === 'open') {
+          window.abrirFichaPorId?.(action.id)
+        }
+
+        pendingActionRef.current = null
+      }, 300)
     }
   }, [modoApp])
 
@@ -73,12 +92,12 @@ function App() {
   async function iniciarComoLogado() {
     try {
       localStorage.removeItem('guestMode')
-
       localStorage.setItem('colonia_fichas', '[]')
 
-      await carregarFichasDoBancoParaLocalStorage()
+      const fichas = await carregarFichasDoBancoParaLocalStorage()
 
-      setModoApp('app')
+      setPersonagens(fichas)
+      setModoApp('panel')
     } catch (error) {
       console.error(error)
       removeToken()
@@ -105,7 +124,7 @@ function App() {
   async function carregarFichasDoBancoParaLocalStorage() {
     const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-    if (!user?.id) return
+    if (!user?.id) return []
 
     const sheets = await getSheets()
     const fichas = sheets.map(sheet => sheet.data)
@@ -114,6 +133,8 @@ function App() {
 
     localStorage.setItem(userKey, JSON.stringify(fichas))
     localStorage.setItem('colonia_fichas', JSON.stringify(fichas))
+
+    return fichas
   }
 
   function criarNovaFicha() {
@@ -151,8 +172,46 @@ function App() {
     window.location.reload()
   }
 
+  function abrirFicha(id) {
+    pendingActionRef.current = {
+      type: 'open',
+      id
+    }
+
+    localStorage.setItem('colonia_ficha_ativa', String(id))
+    setModoApp('app')
+  }
+
+  function criarPersonagemLogado() {
+    pendingActionRef.current = {
+      type: 'new'
+    }
+
+    setModoApp('app')
+  }
+
+  function voltarPainel() {
+    const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
+    setPersonagens(fichas)
+    setModoApp('panel')
+  }
+
   if (!authChecked) {
     return <div className="auth-page">Carregando...</div>
+  }
+
+  if (modoApp === 'panel') {
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+
+    return (
+      <UserPanel
+        user={user}
+        personagens={personagens}
+        onOpenCharacter={abrirFicha}
+        onNewCharacter={criarPersonagemLogado}
+        onLogout={sair}
+      />
+    )
   }
 
   if (modoApp !== 'app') {
@@ -199,6 +258,12 @@ function App() {
           <button className="btn" onClick={importar}>
             Importar JSON
           </button>
+
+          {!isGuest && (
+            <button className="btn" onClick={voltarPainel}>
+              Painel
+            </button>
+          )}
 
           <button className="btn danger" onClick={sair}>
             Sair

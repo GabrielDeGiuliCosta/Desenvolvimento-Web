@@ -359,3 +359,80 @@
   .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
   .contato-row{grid-template-columns:1fr;}
 }
+
+/*PAINEL DO USUARIO*/
+.panel-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.panel-title h1 {
+  font-family: var(--font-display);
+  font-size: 34px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-bright);
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.character-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  padding: 14px;
+}
+
+.character-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.character-card-header h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.character-card-header span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.character-card-info {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.character-card-info div {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 8px;
+}
+
+.character-card-info strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.character-card-info span {
+  color: var(--text-bright);
+}

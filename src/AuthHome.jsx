@@ -85,8 +85,7 @@ function AuthHome({ onGuest, onLoginSuccess }) {
         </button>
 
         <div className="guest-warning">
-          Sem login, suas fichas serão salvas apenas neste navegador usando
-          localStorage. Para guardar fora do navegador, use a exportação JSON.
+          Sem login, suas fichas serão salvas apenas neste navegador usando localStorage. Para guardar fora do navegador, use a exportação JSON. Também não terá acesso ao painel de usuário e outras funcionalidades.
         </div>
       </div>
     </div>

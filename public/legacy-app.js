@@ -402,7 +402,23 @@ function salvar() {
   }, 600)
 }
 
-function carregar() { try{ const d=localStorage.getItem('colonia_fichas'); if(d){ fichas=JSON.parse(d); if(fichas.length) fichaAtiva=fichas[0].id; } }catch(e){} }
+function carregar() {
+  try {
+    const d = localStorage.getItem('colonia_fichas');
+
+    if (d) {
+      fichas = JSON.parse(d);
+
+      const ativaSalva = localStorage.getItem('colonia_ficha_ativa');
+
+      if (ativaSalva && fichas.some(f => String(f.id) === String(ativaSalva))) {
+        fichaAtiva = Number(ativaSalva);
+      } else if (fichas.length) {
+        fichaAtiva = fichas[0].id;
+      }
+    }
+  } catch (e) {}
+}
 
 // ══════════════════════════════════════════════════════
 // TABS
@@ -1985,3 +2001,15 @@ window.novaFicha = novaFicha
 window.exportarFichas = exportarFichas
 window.importarFichas = importarFichas
 window.lerImportacao = lerImportacao
+window.abrirFichaPorId = function(id) {
+  fichaAtiva = Number(id);
+  localStorage.setItem('colonia_ficha_ativa', String(id));
+  renderizarTabs();
+  renderizarFichaAtiva();
+}
+
+window.recarregarFichasLegacy = function() {
+  carregar();
+  renderizarTabs();
+  renderizarFichaAtiva();
+}

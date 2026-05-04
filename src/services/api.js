@@ -4,6 +4,20 @@ export function getToken() {
   return localStorage.getItem('token')
 }
 
+export function getUser() {
+  return JSON.parse(localStorage.getItem('user') || 'null')
+}
+
+export function getFichasStorageKey() {
+  const user = getUser()
+
+  if (user?.id) {
+    return `colonia_fichas_user_${user.id}`
+  }
+
+  return 'colonia_fichas_guest'
+}
+
 export function setToken(token) {
   localStorage.setItem('token', token)
 }
@@ -59,6 +73,12 @@ export async function createSheet(title, data) {
   return apiRequest('/sheets', {
     method: 'POST',
     body: JSON.stringify({ title, data })
+  })
+}
+
+export async function deleteSheet(id) {
+  return apiRequest(`/sheets/${id}`, {
+    method: 'DELETE'
   })
 }
 

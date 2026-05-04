@@ -28,8 +28,11 @@ async function createSheet(req, res) {
       })
     }
 
+    const localId = String(data.id)
+
     const sheet = await prisma.sheet.create({
       data: {
+        localId,
         title,
         data,
         userId: req.user.id
@@ -102,27 +105,46 @@ async function deleteSheet(req, res) {
   try {
     const { id } = req.params
 
-    const sheetExists = await prisma.sheet.findFirst({
+    let sheet = await prisma.sheet.findFirst({
       where: {
-        id: Number(id),
-        userId: req.user.id
+        userId: req.user.id,
+        OR: [
+          { id: Number(id) || -1 },
+          { localId: String(id) }
+        ]
       }
     })
 
-    if (!sheetExists) {
-      return res.status(404).json({ message: 'Ficha não encontrada.' })
+    if (!sheet) {
+      const sheets = await prisma.sheet.findMany({
+        where: {
+          userId: req.user.id
+        }
+      })
+
+      sheet = sheets.find(s => String(s.data?.id) === String(id))
+    }
+
+    if (!sheet) {
+      return res.status(404).json({
+        message: 'Ficha não encontrada.'
+      })
     }
 
     await prisma.sheet.delete({
       where: {
-        id: Number(id)
+        id: sheet.id
       }
     })
 
-    return res.json({ message: 'Ficha apagada com sucesso.' })
+    return res.json({
+      message: 'Ficha deletada com sucesso.'
+    })
   } catch (error) {
     console.error(error)
-    return res.status(500).json({ message: 'Erro ao apagar ficha.' })
+    return res.status(500).json({
+      message: 'Erro ao deletar ficha.'
+    })
   }
 }
 
@@ -136,18 +158,40 @@ async function syncSheet(req, res) {
       })
     }
 
-    const sheet = await prisma.sheet.upsert({
+    let sheet = await prisma.sheet.findFirst({
       where: {
-        userId_localId: {
-          userId: req.user.id,
-          localId
+        userId: req.user.id,
+        localId
+      }
+    })
+
+    if (!sheet) {
+      const sheets = await prisma.sheet.findMany({
+        where: {
+          userId: req.user.id
         }
-      },
-      update: {
-        title,
-        data
-      },
-      create: {
+      })
+
+      sheet = sheets.find(s => String(s.data?.id) === String(localId))
+    }
+
+    if (sheet) {
+      const updated = await prisma.sheet.update({
+        where: {
+          id: sheet.id
+        },
+        data: {
+          localId,
+          title,
+          data
+        }
+      })
+
+      return res.json(updated)
+    }
+
+    const created = await prisma.sheet.create({
+      data: {
         localId,
         title,
         data,
@@ -155,7 +199,7 @@ async function syncSheet(req, res) {
       }
     })
 
-    return res.json(sheet)
+    return res.json(created)
   } catch (error) {
     console.error(error)
     return res.status(500).json({

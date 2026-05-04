@@ -374,21 +374,34 @@ let syncTimer = null;
 
 function salvar() {
   try {
-    localStorage.setItem('colonia_fichas', JSON.stringify(fichas));
+    localStorage.setItem('colonia_fichas', JSON.stringify(fichas))
+
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    const guestMode = localStorage.getItem('guestMode') === 'true'
+
+    if (user?.id && !guestMode) {
+      localStorage.setItem(`colonia_fichas_user_${user.id}`, JSON.stringify(fichas))
+    } else {
+      localStorage.setItem('colonia_fichas_guest', JSON.stringify(fichas))
+    }
   } catch (e) {}
 
-  const ficha = getFicha();
+  const ficha = getFicha()
 
   if (syncTimer) {
-    clearTimeout(syncTimer);
+    clearTimeout(syncTimer)
   }
 
   syncTimer = setTimeout(() => {
-    if (window.syncFichaComBackend && ficha) {
-      window.syncFichaComBackend(ficha);
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    const guestMode = localStorage.getItem('guestMode') === 'true'
+
+    if (window.syncFichaComBackend && ficha && user?.id && !guestMode) {
+      window.syncFichaComBackend(ficha)
     }
-  }, 600);
+  }, 600)
 }
+
 function carregar() { try{ const d=localStorage.getItem('colonia_fichas'); if(d){ fichas=JSON.parse(d); if(fichas.length) fichaAtiva=fichas[0].id; } }catch(e){} }
 
 // ══════════════════════════════════════════════════════
@@ -1935,9 +1948,20 @@ function realizarRolagem() {
 // ══════════════════════════════════════════════════════
 function deletarFicha(id) {
   if(!confirm('Deletar esta ficha? Esta ação não pode ser desfeita.'))return;
-  fichas=fichas.filter(f=>f.id!==id);
-  fichaAtiva=fichas.length?fichas[0].id:null;
-  salvar(); renderizarTabs(); renderizarFichaAtiva();
+  fichas = fichas.filter(f => f.id !== id);
+
+  if (fichaAtiva === id) {
+    fichaAtiva = fichas.length ? fichas[0].id : null;
+  }
+
+  salvar();
+
+  if (window.deleteFichaBackend) {
+    window.deleteFichaBackend(id);
+  }
+
+  renderizarTabs();
+  renderizarFichaAtiva();
 }
 function exportarFichas() {
   const blob=new Blob([JSON.stringify(fichas,null,2)],{type:'application/json'});

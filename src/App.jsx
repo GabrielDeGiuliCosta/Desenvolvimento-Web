@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import AuthHome from './AuthHome'
-import { createSheet, getSheets, getToken, removeToken, syncSheet } from './services/api'
+import { getSheets, getToken, removeToken, syncSheet, deleteSheet } from './services/api'
 
 function App() {
   const [authChecked, setAuthChecked] = useState(false)
@@ -37,8 +37,23 @@ function App() {
       }
     }
 
+    window.deleteFichaBackend = async function (localId) {
+      const token = localStorage.getItem('token')
+      const guestMode = localStorage.getItem('guestMode') === 'true'
+
+      if (!token || guestMode) return
+
+      try {
+        await deleteSheet(String(localId))
+        console.log('Ficha deletada no backend:', localId)
+      } catch (error) {
+        console.error('Erro ao deletar ficha no backend:', error)
+      }
+    }
+
     return () => {
       delete window.syncFichaComBackend
+      delete window.deleteFichaBackend
     }
   }, [])
 
@@ -57,7 +72,10 @@ function App() {
 
   async function iniciarComoLogado() {
     try {
-      await sincronizarFichasLocaisComBanco()
+      localStorage.removeItem('guestMode')
+
+      localStorage.setItem('colonia_fichas', '[]')
+
       await carregarFichasDoBancoParaLocalStorage()
 
       setModoApp('app')
@@ -65,6 +83,7 @@ function App() {
       console.error(error)
       removeToken()
       localStorage.removeItem('user')
+      localStorage.setItem('colonia_fichas', '[]')
       setModoApp(null)
     } finally {
       setAuthChecked(true)
@@ -72,33 +91,28 @@ function App() {
   }
 
   function iniciarComoConvidado() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     localStorage.setItem('guestMode', 'true')
+
+    const guestFichas = localStorage.getItem('colonia_fichas_guest') || '[]'
+
+    localStorage.setItem('colonia_fichas', guestFichas)
+
     setModoApp('app')
   }
 
-  async function sincronizarFichasLocaisComBanco() {
-    const local = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
-
-    if (!Array.isArray(local) || local.length === 0) return
-
-    const fichasBanco = await getSheets()
-
-    for (const ficha of local) {
-      const jaExiste = fichasBanco.some(sheet => {
-        return sheet.data?.id === ficha.id
-      })
-
-      if (!jaExiste) {
-        await createSheet(ficha.nome || 'Ficha sem nome', ficha)
-      }
-    }
-  }
-
   async function carregarFichasDoBancoParaLocalStorage() {
-    const sheets = await getSheets()
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
 
+    if (!user?.id) return
+
+    const sheets = await getSheets()
     const fichas = sheets.map(sheet => sheet.data)
 
+    const userKey = `colonia_fichas_user_${user.id}`
+
+    localStorage.setItem(userKey, JSON.stringify(fichas))
     localStorage.setItem('colonia_fichas', JSON.stringify(fichas))
   }
 
@@ -119,9 +133,21 @@ function App() {
   }
 
   function sair() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    const fichasAtuais = localStorage.getItem('colonia_fichas') || '[]'
+
+    if (user?.id) {
+      localStorage.setItem(`colonia_fichas_user_${user.id}`, fichasAtuais)
+    } else {
+      localStorage.setItem('colonia_fichas_guest', fichasAtuais)
+    }
+
     removeToken()
     localStorage.removeItem('user')
     localStorage.removeItem('guestMode')
+
+    localStorage.setItem('colonia_fichas', '[]')
+
     window.location.reload()
   }
 

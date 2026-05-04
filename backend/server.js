@@ -2,9 +2,16 @@ const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
 
+const authRoutes = require('./routes/authRoutes')
+const sheetRoutes = require('./routes/sheetRoutes')
+
 const app = express()
 
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}))
+
 app.use(express.json())
 
 app.get('/', (req, res) => {
@@ -13,11 +20,8 @@ app.get('/', (req, res) => {
   })
 })
 
-app.get('/api/teste', (req, res) => {
-  res.json({
-    mensagem: 'API conectada ao React com sucesso.'
-  })
-})
+app.use('/api/auth', authRoutes)
+app.use('/api/sheets', sheetRoutes)
 
 const PORT = process.env.PORT || 3001
 

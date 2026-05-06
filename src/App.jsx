@@ -247,9 +247,11 @@ function App() {
             </span>
           )}
 
-          <button className="btn primary" onClick={criarNovaFicha}>
-            Nova Ficha
-          </button>
+          {isGuest && (
+            <button className="btn primary" onClick={criarNovaFicha}>
+              Nova Ficha
+            </button>
+          )}
 
           <button className="btn" onClick={exportar}>
             Exportar JSON
@@ -271,7 +273,13 @@ function App() {
         </div>
       </header>
 
-      <div className="tabs-bar" id="tabsBar"></div>
+      {isGuest && (
+        <div className="tabs-bar" id="tabsBar"></div>
+      )}
+
+      {!isGuest && (
+        <div id="tabsBar" style={{ display: 'none' }}></div>
+      )}
 
       <main className="main" id="mainContent"></main>
 

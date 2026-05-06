@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import AuthHome from './AuthHome'
 import UserPanel from './UserPanel'
+import UserMenu from './UserMenu'
 import { getSheets, getToken, removeToken, syncSheet, deleteSheet } from './services/api'
 
 function App() {
@@ -242,34 +243,36 @@ function App() {
 
         <div className="header-actions">
           {isGuest && (
-            <span className="guest-header-warning">
-              Salvando apenas localmente
-            </span>
+            <>
+              <button className="btn primary" onClick={criarNovaFicha}>
+                Nova Ficha
+              </button>
+
+              <button className="btn" onClick={exportar}>
+                Exportar
+              </button>
+
+              <button className="btn" onClick={importar}>
+                Importar
+              </button>
+
+              <button className="btn danger" onClick={sair}>
+                Sair
+              </button>
+            </>
           )}
-
-          {isGuest && (
-            <button className="btn primary" onClick={criarNovaFicha}>
-              Nova Ficha
-            </button>
-          )}
-
-          <button className="btn" onClick={exportar}>
-            Exportar JSON
-          </button>
-
-          <button className="btn" onClick={importar}>
-            Importar JSON
-          </button>
 
           {!isGuest && (
-            <button className="btn" onClick={voltarPainel}>
-              Painel
-            </button>
+            <UserMenu
+              user={user}
+              onPanel={voltarPainel}
+              onNewCharacter={criarPersonagemLogado}
+              onExport={exportar}
+              onImport={importar}
+              onLogout={sair}
+              showPanelOption={true}
+            />
           )}
-
-          <button className="btn danger" onClick={sair}>
-            Sair
-          </button>
         </div>
       </header>
 

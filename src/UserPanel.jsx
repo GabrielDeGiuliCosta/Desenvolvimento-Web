@@ -1,3 +1,5 @@
+import UserMenu from './UserMenu'
+
 function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogout }) {
   return (
     <>
@@ -8,13 +10,15 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
         </div>
 
         <div className="header-actions">
-          <button className="btn primary" onClick={onNewCharacter}>
-            Novo Personagem
-          </button>
-
-          <button className="btn danger" onClick={onLogout}>
-            Sair
-          </button>
+          <UserMenu
+            user={user}
+            onPanel={() => {}}
+            onNewCharacter={onNewCharacter}
+            onExport={() => window.exportarFichas?.()}
+            onImport={() => window.importarFichas?.()}
+            onLogout={onLogout}
+            showPanelOption={false}
+          />
         </div>
       </header>
 

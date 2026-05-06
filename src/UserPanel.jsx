@@ -9,7 +9,7 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
           <span>Painel de personagens — {user?.name}</span>
         </div>
 
-        <div className="header-actions">
+        <nav className="header-actions" aria-label="Ações do painel de usuário">
           <UserMenu
             user={user}
             onPanel={() => {}}
@@ -19,28 +19,32 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
             onLogout={onLogout}
             showPanelOption={false}
           />
-        </div>
+        </nav>
       </header>
 
       <main className="main">
-        <div className="panel-title">
+        <section className="panel-title" aria-labelledby="panel-heading">
           <div>
             <div className="section-label">Personagens</div>
-            <h1>Suas fichas salvas</h1>
+            <h1 id="panel-heading">Suas fichas salvas</h1>
           </div>
-        </div>
+        </section>
 
         {personagens.length === 0 ? (
-          <div className="empty-state">
-            <h2>Nenhum Personagem</h2>
+          <section className="empty-state" aria-labelledby="empty-characters-heading">
+            <h2 id="empty-characters-heading">Nenhum Personagem</h2>
             <p>Clique em <strong>Novo Personagem</strong> para criar sua primeira ficha.</p>
-          </div>
+          </section>
         ) : (
-          <div className="character-grid">
+          <section className="character-grid" aria-label="Lista de personagens salvos">
             {personagens.map((ficha) => (
-              <div className="character-card" key={ficha.id}>
+              <article
+                className="character-card"
+                key={ficha.id}
+                aria-labelledby={`character-${ficha.id}-title`}
+              >
                 <div className="character-card-header">
-                  <h2>{ficha.nome || 'Sem Nome'}</h2>
+                  <h2 id={`character-${ficha.id}-title`}>{ficha.nome || 'Sem Nome'}</h2>
                   <span>Nível {ficha.nivel || 1}</span>
                 </div>
 
@@ -56,12 +60,17 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
                   </div>
                 </div>
 
-                <button className="btn primary" onClick={() => onOpenCharacter(ficha.id)}>
+                <button
+                  className="btn primary"
+                  type="button"
+                  onClick={() => onOpenCharacter(ficha.id)}
+                  aria-label={`Abrir ficha de ${ficha.nome || 'personagem sem nome'}`}
+                >
                   Abrir Ficha
                 </button>
-              </div>
+              </article>
             ))}
-          </div>
+          </section>
         )}
       </main>
     </>

@@ -171,7 +171,7 @@
   .field label{display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px;}
   .field input,.field textarea,.field select{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--font-body);font-size:13px;padding:6px 9px;outline:none;transition:border-color .15s;resize:vertical;}
   .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);}
-  .field input[type="number"]{-moz-appearance:textfield;}
+  .field input[type="number"]{-moz-appearance:textfield;appearance:textfield;}
   .field input[type="number"]::-webkit-inner-spin-button{display:none;}
   .field-row{display:flex;gap:10px;}
   .field-row .field{flex:1;}
@@ -494,4 +494,91 @@
 .user-menu-dropdown button.danger:hover {
   background: var(--accent2);
   color: #fff;
+}
+
+/*SEO*/
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-field label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.character-card,
+.card,
+.roll-panel,
+.vd-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 900px) {
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-actions .btn,
+  .header-actions button {
+    flex: 1 1 auto;
+  }
+
+  .panel-title h1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 14px;
+  }
+
+  .auth-card {
+    padding: 18px;
+  }
+
+  .auth-card h1 {
+    font-size: 34px;
+  }
+
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .character-card-header {
+    flex-direction: column;
+  }
 }

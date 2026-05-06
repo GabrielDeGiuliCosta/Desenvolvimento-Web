@@ -24,7 +24,7 @@ function App() {
     if (modoApp === 'app') {
       carregarLegacyApp()
 
-      setTimeout(() => {
+      const actionTimer = setTimeout(() => {
         const action = pendingActionRef.current
 
         if (!action) return
@@ -39,6 +39,7 @@ function App() {
 
         pendingActionRef.current = null
       }, 300)
+      return () => clearTimeout(actionTimer)
     }
   }, [modoApp])
 
@@ -198,7 +199,11 @@ function App() {
   }
 
   if (!authChecked) {
-    return <div className="auth-page">Carregando...</div>
+    return (
+      <main className="auth-page" aria-live="polite">
+        Carregando...
+      </main>
+    )
   }
 
   if (modoApp === 'panel') {
@@ -241,22 +246,42 @@ function App() {
           </span>
         </div>
 
-        <div className="header-actions">
+        <nav className="header-actions" aria-label="Ações da ficha">
           {isGuest && (
             <>
-              <button className="btn primary" onClick={criarNovaFicha}>
+              <button
+                className="btn primary"
+                type="button"
+                onClick={criarNovaFicha}
+                aria-label="Criar nova ficha local"
+              >
                 Nova Ficha
               </button>
 
-              <button className="btn" onClick={exportar}>
-                Exportar
+              <button
+                className="btn"
+                type="button"
+                onClick={exportar}
+                aria-label="Exportar fichas em JSON"
+              >
+                Exportar JSON
               </button>
 
-              <button className="btn" onClick={importar}>
-                Importar
+              <button
+                className="btn"
+                type="button"
+                onClick={importar}
+                aria-label="Importar fichas de um arquivo JSON"
+              >
+                Importar JSON
               </button>
 
-              <button className="btn danger" onClick={sair}>
+              <button
+                className="btn danger"
+                type="button"
+                onClick={sair}
+                aria-label="Sair do modo convidado"
+              >
                 Sair
               </button>
             </>
@@ -273,18 +298,25 @@ function App() {
               showPanelOption={true}
             />
           )}
-        </div>
+        </nav>
       </header>
 
       {isGuest && (
-        <div className="tabs-bar" id="tabsBar"></div>
+        <div
+          className="tabs-bar"
+          id="tabsBar"
+          role="navigation"
+          aria-label="Fichas abertas"
+        ></div>
+      )} : {(
+        <div id="tabsBar" hidden></div>
       )}
 
       {!isGuest && (
         <div id="tabsBar" style={{ display: 'none' }}></div>
       )}
 
-      <main className="main" id="mainContent"></main>
+      <main className="main" id="mainContent" aria-live="polite"></main>
 
       <input
         id="importInput"
@@ -292,6 +324,7 @@ function App() {
         accept=".json,application/json"
         style={{ display: 'none' }}
         onChange={lerArquivoImportado}
+        aria-label="Selecionar arquivo JSON para importar fichas"
       />
     </>
   )

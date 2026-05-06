@@ -28,13 +28,16 @@ function AuthHome({ onGuest, onLoginSuccess }) {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Colônia</h1>
+    <main className="auth-page">
+      <section className="auth-card" aria-labelledby="auth-title">
+        <h1 id="auth-title">Colônia</h1>
         <p>Entre na sua conta para salvar suas fichas online.</p>
 
-        <div className="auth-tabs">
+        <div className="auth-tabs" role="tablist" aria-label="Opções de autenticação">
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'login'}
             className={mode === 'login' ? 'active' : ''}
             onClick={() => setMode('login')}
           >
@@ -42,6 +45,9 @@ function AuthHome({ onGuest, onLoginSuccess }) {
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'register'}
             className={mode === 'register' ? 'active' : ''}
             onClick={() => setMode('register')}
           >
@@ -49,46 +55,74 @@ function AuthHome({ onGuest, onLoginSuccess }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} aria-describedby="guest-warning">
           {mode === 'register' && (
-            <input
-              type="text"
-              placeholder="Nome"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div className="auth-field">
+              <label htmlFor="auth-name">Nome</label>
+              <input
+                id="auth-name"
+                type="text"
+                placeholder="Nome"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
           )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div className="auth-field">
+            <label htmlFor="auth-email">Email</label>
+            <input
+              id="auth-email"
+              type="email"
+              placeholder="Email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="auth-field">
+            <label htmlFor="auth-password">Senha</label>
+            <input
+              id="auth-password"
+              type="password"
+              placeholder="Senha"
+              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-          {erro && <div className="auth-error">{erro}</div>}
+          {erro && (
+            <div className="auth-error" role="alert" aria-live="polite">
+              {erro}
+            </div>
+          )}
 
-          <button className="btn primary" type="submit">
+          <button
+            className="btn primary"
+            type="submit"
+            aria-label={mode === 'register' ? 'Criar nova conta' : 'Entrar na conta'}
+          >
             {mode === 'register' ? 'Criar Conta' : 'Entrar'}
           </button>
         </form>
 
-        <button className="btn" onClick={onGuest}>
+        <button
+          className="btn"
+          type="button"
+          onClick={onGuest}
+          aria-label="Continuar sem login usando salvamento local"
+        >
           Continuar sem login
         </button>
 
-        <div className="guest-warning">
+        <div id="guest-warning" className="guest-warning">
           Sem login, suas fichas serão salvas apenas neste navegador usando localStorage. Para guardar fora do navegador, use a exportação JSON. Também não terá acesso ao painel de usuário e outras funcionalidades.
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }
 

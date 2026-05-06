@@ -301,14 +301,14 @@ function App() {
         </nav>
       </header>
 
-      {isGuest && (
+      {isGuest ? (
         <div
           className="tabs-bar"
           id="tabsBar"
           role="navigation"
           aria-label="Fichas abertas"
         ></div>
-      )} : {(
+      ) : (
         <div id="tabsBar" hidden></div>
       )}
 

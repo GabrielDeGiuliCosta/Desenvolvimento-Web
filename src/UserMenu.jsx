@@ -7,7 +7,8 @@ function UserMenu({
   onExport,
   onImport,
   onLogout,
-  showPanelOption = true
+  showPanelOption = true,
+  showExportOption = true
 }) {
   const [open, setOpen] = useState(false)
 
@@ -20,21 +21,18 @@ function UserMenu({
       {open && (
         <div className="user-menu-dropdown">
           {showPanelOption && (
-            <button type="button" onClick={onPanel}>
-              Voltar ao Painel
-            </button>
+            <button type="button" onClick={onPanel}>Voltar ao Painel</button>
           )}
 
-          <button type="button" onClick={onNewCharacter}>
-            Nova Ficha
-          </button>
-          <button type="button" onClick={onExport}>
-            Exportar JSON
-          </button>
-          <button type="button" onClick={onImport}>
-            Importar JSON
-          </button>
-          <button className="danger" type="button" onClick={onLogout}>
+          <button type="button" onClick={onNewCharacter}>Nova Ficha</button>
+
+          {showExportOption && (
+            <button type="button" onClick={onExport}>Exportar JSON</button>
+          )}
+
+          <button type="button" onClick={onImport}>Importar JSON</button>
+
+          <button type="button" className="danger" onClick={onLogout}>
             Logout
           </button>
         </div>

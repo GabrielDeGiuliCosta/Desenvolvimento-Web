@@ -192,6 +192,95 @@ function App() {
     setModoApp('app')
   }
 
+  function importarJsonNoPainel() {
+    const input = document.getElementById('panelImportInput')
+
+    if (input) {
+      input.value = ''
+      input.click()
+    }
+  }
+
+  function fichaValida(ficha) {
+    if (!ficha || typeof ficha !== 'object' || Array.isArray(ficha)) {
+      return false
+    }
+
+    const camposMinimos = [
+      'nome',
+      'nivel',
+      'fisico',
+      'esperteza',
+      'sagacidade'
+    ]
+
+    return camposMinimos.some(campo => campo in ficha)
+  }
+
+  async function lerImportacaoPainel(e) {
+    const file = e.target.files?.[0]
+
+    if (!file) return
+
+    try {
+      const texto = await file.text()
+      const json = JSON.parse(texto)
+
+      let fichasImportadas = []
+
+      if (Array.isArray(json)) {
+        fichasImportadas = json
+      } else if (Array.isArray(json.fichas)) {
+        fichasImportadas = json.fichas
+      } else {
+        fichasImportadas = [json]
+      }
+
+      const fichasValidas = fichasImportadas.filter(fichaValida)
+
+      if (fichasValidas.length === 0) {
+        alert('O arquivo JSON importado não possui um formato válido de ficha.')
+        return
+      }
+
+      const fichasAtuais = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
+
+      const novasFichas = fichasValidas.map((ficha, index) => ({
+        ...ficha,
+        id: Date.now() + index,
+        nome: ficha.nome || 'Ficha Importada'
+      }))
+
+      const fichasAtualizadas = [...fichasAtuais, ...novasFichas]
+
+      localStorage.setItem('colonia_fichas', JSON.stringify(fichasAtualizadas))
+
+      const user = JSON.parse(localStorage.getItem('user') || 'null')
+
+      if (user?.id) {
+        localStorage.setItem(
+          `colonia_fichas_user_${user.id}`,
+          JSON.stringify(fichasAtualizadas)
+        )
+      }
+
+      for (const ficha of novasFichas) {
+        await syncSheet(ficha)
+      }
+
+      setPersonagens(fichasAtualizadas)
+
+      alert(
+        novasFichas.length === 1
+          ? 'Ficha importada com sucesso.'
+          : `${novasFichas.length} fichas importadas com sucesso.`
+      )
+    } catch (error) {
+      console.error(error)
+      alert('Não foi possível importar o arquivo. Verifique se ele é um JSON válido.')
+    }
+  }
+
   function voltarPainel() {
     const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
     setPersonagens(fichas)
@@ -210,13 +299,24 @@ function App() {
     const user = JSON.parse(localStorage.getItem('user') || 'null')
 
     return (
+      <>
       <UserPanel
         user={user}
         personagens={personagens}
         onOpenCharacter={abrirFicha}
         onNewCharacter={criarPersonagemLogado}
+        onImport={importarJsonNoPainel}
         onLogout={sair}
       />
+
+      <input
+        id="panelImportInput"
+        type="file"
+        accept=".json,application/json"
+        style={{ display: 'none' }}
+        onChange={lerImportacaoPainel}
+      />
+    </>
     )
   }
 

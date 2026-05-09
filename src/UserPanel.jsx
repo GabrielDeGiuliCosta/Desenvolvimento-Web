@@ -1,6 +1,6 @@
 import UserMenu from './UserMenu'
 
-function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogout }) {
+function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onImport, onLogout }) {
   return (
     <>
       <header>
@@ -14,10 +14,10 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
             user={user}
             onPanel={() => {}}
             onNewCharacter={onNewCharacter}
-            onExport={() => window.exportarFichas?.()}
-            onImport={() => window.importarFichas?.()}
+            onImport={onImport}
             onLogout={onLogout}
             showPanelOption={false}
+            showExportOption={false}
           />
         </nav>
       </header>

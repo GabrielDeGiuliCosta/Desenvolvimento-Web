@@ -51,26 +51,51 @@ function App() {
       if (!token || guestMode || !ficha) return
 
       try {
-        await syncSheet(ficha)
+        const sheetSalva = await syncSheet(ficha)
+
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
+
+        const fichasAtualizadas = fichas.map(f => {
+          if (String(f.id) === String(ficha.id)) {
+            return {
+              ...f,
+              _backendId: sheetSalva.id,
+              _localId: sheetSalva.localId
+            }
+          }
+
+          return f
+        })
+
+        localStorage.setItem('colonia_fichas', JSON.stringify(fichasAtualizadas))
+
+        if (user?.id) {
+          localStorage.setItem(
+            `colonia_fichas_user_${user.id}`,
+            JSON.stringify(fichasAtualizadas)
+          )
+        }
+
         console.log('Ficha sincronizada:', ficha.nome || ficha.id)
       } catch (error) {
         console.error('Erro ao sincronizar ficha:', error)
       }
     }
 
-    window.deleteFichaBackend = async function (localId) {
-      const token = localStorage.getItem('token');
-      const guestMode = localStorage.getItem('guestMode') === 'true';
+    window.deleteFichaBackend = async function (idParaDeletar) {
+      const token = localStorage.getItem('token')
+      const guestMode = localStorage.getItem('guestMode') === 'true'
 
-      if (!token || guestMode) return true;
+      if (!token || guestMode) return true
 
       try {
-        await deleteSheet(String(localId));
-        console.log('Ficha deletada no backend:', localId);
-        return true;
+        await deleteSheet(String(idParaDeletar))
+        console.log('Ficha deletada no backend:', idParaDeletar)
+        return true
       } catch (error) {
-        console.error('Erro ao deletar ficha no backend:', error);
-        return false;
+        console.error('Erro ao deletar ficha no backend:', error)
+        return false
       }
     }
 
@@ -131,7 +156,12 @@ function App() {
     if (!user?.id) return []
 
     const sheets = await getSheets()
-    const fichas = sheets.map(sheet => sheet.data)
+
+    const fichas = sheets.map(sheet => ({
+      ...sheet.data,
+      _backendId: sheet.id,
+      _localId: sheet.localId
+    }))
 
     const userKey = `colonia_fichas_user_${user.id}`
 

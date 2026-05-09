@@ -1981,11 +1981,15 @@ async function deletarFicha(id) {
 
   fichasEmExclusao.add(idStr);
 
+  const fichaParaDeletar = fichas.find(f => String(f.id) === idStr);
+
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const guestMode = localStorage.getItem('guestMode') === 'true';
 
   if (user?.id && !guestMode && window.deleteFichaBackend) {
-    const deletouNoBackend = await window.deleteFichaBackend(idStr);
+    const idBackendOuLocal = fichaParaDeletar?._backendId || idStr;
+
+    const deletouNoBackend = await window.deleteFichaBackend(idBackendOuLocal);
 
     if (!deletouNoBackend) {
       fichasEmExclusao.delete(idStr);

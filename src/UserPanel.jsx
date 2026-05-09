@@ -30,48 +30,58 @@ function UserPanel({ user, personagens, onOpenCharacter, onNewCharacter, onLogou
           </div>
         </section>
 
-        {personagens.length === 0 ? (
-          <section className="empty-state" aria-labelledby="empty-characters-heading">
+        {personagens.length === 0 && (
+          <section className="empty-state compact-empty" aria-labelledby="empty-characters-heading">
             <h2 id="empty-characters-heading">Nenhum Personagem</h2>
-            <p>Clique em <strong>Novo Personagem</strong> para criar sua primeira ficha.</p>
-          </section>
-        ) : (
-          <section className="character-grid" aria-label="Lista de personagens salvos">
-            {personagens.map((ficha) => (
-              <article
-                className="character-card"
-                key={ficha.id}
-                aria-labelledby={`character-${ficha.id}-title`}
-              >
-                <div className="character-card-header">
-                  <h2 id={`character-${ficha.id}-title`}>{ficha.nome || 'Sem Nome'}</h2>
-                  <span>Nível {ficha.nivel || 1}</span>
-                </div>
-
-                <div className="character-card-info">
-                  <div>
-                    <strong>Arquétipo</strong>
-                    <span>{ficha.arquetipos || ficha.arquetipo1 || '—'}</span>
-                  </div>
-
-                  <div>
-                    <strong>Ocupação</strong>
-                    <span>{ficha.ocupacoes || ficha.ocupacao1 || '—'}</span>
-                  </div>
-                </div>
-
-                <button
-                  className="btn primary"
-                  type="button"
-                  onClick={() => onOpenCharacter(ficha.id)}
-                  aria-label={`Abrir ficha de ${ficha.nome || 'personagem sem nome'}`}
-                >
-                  Abrir Ficha
-                </button>
-              </article>
-            ))}
+            <p>Clique no cartão com o símbolo <strong>+</strong> para criar sua primeira ficha.</p>
           </section>
         )}
+
+        <section className="character-grid" aria-label="Lista de personagens salvos">
+          {personagens.map((ficha) => (
+            <article
+              className="character-card"
+              key={ficha.id}
+              aria-labelledby={`character-${ficha.id}-title`}
+            >
+              <div className="character-card-header">
+                <h2 id={`character-${ficha.id}-title`}>{ficha.nome || 'Sem Nome'}</h2>
+                <span>Nível {ficha.nivel || 1}</span>
+              </div>
+
+              <div className="character-card-info">
+                <div>
+                  <strong>Arquétipo</strong>
+                  <span>{ficha.arquetipos || ficha.arquetipo1 || '—'}</span>
+                </div>
+
+                <div>
+                  <strong>Ocupação</strong>
+                  <span>{ficha.ocupacoes || ficha.ocupacao1 || '—'}</span>
+                </div>
+              </div>
+
+              <button
+                className="btn primary"
+                type="button"
+                onClick={() => onOpenCharacter(ficha.id)}
+                aria-label={`Abrir ficha de ${ficha.nome || 'personagem sem nome'}`}
+              >
+                Abrir Ficha
+              </button>
+            </article>
+          ))}
+
+          <button
+            className="character-add-card"
+            type="button"
+            onClick={onNewCharacter}
+            aria-label="Criar novo personagem"
+          >
+            <span>＋</span>
+            <strong>Novo Personagem</strong>
+          </button>
+        </section>
       </main>
     </>
   )

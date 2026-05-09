@@ -465,6 +465,22 @@
   z-index: 500;
   display: flex;
   flex-direction: column;
+  @media (max-width: 700px) {
+    .user-menu {
+      width: 100%;
+    }
+
+    .user-menu-button {
+      width: 100%;
+    }
+
+    .user-menu-dropdown {
+      left: 0;
+      right: 0;
+      min-width: 0;
+      width: 100%;
+    }
+  }
 }
 
 .user-menu-dropdown button {
@@ -581,4 +597,61 @@ textarea:focus-visible {
   .character-card-header {
     flex-direction: column;
   }
+
+    .inner-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+  }
+
+  .inner-tab {
+    padding: 7px 4px;
+    font-size: 9px;
+    letter-spacing: 0;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.15;
+  }
+}
+
+/*CARTÃO DE NOVO PERSONAGEM*/
+
+.character-add-card {
+  min-height: 210px;
+  background: var(--surface);
+  border: 1px dashed var(--border-accent);
+  border-top: 2px solid var(--accent);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all .15s;
+}
+
+.character-add-card span {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.character-add-card strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.character-add-card:hover {
+  border-color: var(--accent);
+  background: rgba(232, 200, 74, .05);
+  color: var(--accent);
+}
+
+.compact-empty {
+  padding: 24px 20px;
+  margin-bottom: 14px;
 }

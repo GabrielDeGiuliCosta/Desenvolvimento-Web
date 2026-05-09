@@ -13,20 +13,30 @@ function UserMenu({
 
   return (
     <div className="user-menu">
-      <button className="user-menu-button" onClick={() => setOpen(!open)}>
+      <button className="user-menu-button" type="button" onClick={() => setOpen(!open)}>
         {user?.name || 'Usuário'} ▾
       </button>
 
       {open && (
         <div className="user-menu-dropdown">
           {showPanelOption && (
-            <button onClick={onPanel}>Voltar ao Painel</button>
+            <button type="button" onClick={onPanel}>
+              Voltar ao Painel
+            </button>
           )}
 
-          <button onClick={onNewCharacter}>Nova Ficha</button>
-          <button onClick={onExport}>Exportar JSON</button>
-          <button onClick={onImport}>Importar JSON</button>
-          <button className="danger" onClick={onLogout}>Logout</button>
+          <button type="button" onClick={onNewCharacter}>
+            Nova Ficha
+          </button>
+          <button type="button" onClick={onExport}>
+            Exportar JSON
+          </button>
+          <button type="button" onClick={onImport}>
+            Importar JSON
+          </button>
+          <button className="danger" type="button" onClick={onLogout}>
+            Logout
+          </button>
         </div>
       )}
     </div>

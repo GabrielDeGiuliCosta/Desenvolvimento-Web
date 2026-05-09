@@ -59,18 +59,18 @@ function App() {
     }
 
     window.deleteFichaBackend = async function (localId) {
-      const token = localStorage.getItem('token')
-      const guestMode = localStorage.getItem('guestMode') === 'true'
+      const token = localStorage.getItem('token');
+      const guestMode = localStorage.getItem('guestMode') === 'true';
 
-      if (!token || guestMode) return
+      if (!token || guestMode) return true;
 
       try {
-        await deleteSheet(String(localId))
-        console.log('Ficha deletada no backend:', localId)
-        return true
+        await deleteSheet(String(localId));
+        console.log('Ficha deletada no backend:', localId);
+        return true;
       } catch (error) {
-        console.error('Erro ao deletar ficha no backend:', error)
-        return false
+        console.error('Erro ao deletar ficha no backend:', error);
+        return false;
       }
     }
 
@@ -412,10 +412,6 @@ function App() {
         ></div>
       ) : (
         <div id="tabsBar" hidden></div>
-      )}
-
-      {!isGuest && (
-        <div id="tabsBar" style={{ display: 'none' }}></div>
       )}
 
       <main className="main" id="mainContent" aria-live="polite"></main>

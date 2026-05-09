@@ -371,35 +371,42 @@ function criarFichaVazia(id) {
 
 function getFicha() { return fichas.find(f=>f.id===fichaAtiva); }
 let syncTimer = null;
+const fichasEmExclusao = new Set();
 
 function salvar() {
   try {
-    localStorage.setItem('colonia_fichas', JSON.stringify(fichas))
+    localStorage.setItem('colonia_fichas', JSON.stringify(fichas));
 
-    const user = JSON.parse(localStorage.getItem('user') || 'null')
-    const guestMode = localStorage.getItem('guestMode') === 'true'
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const guestMode = localStorage.getItem('guestMode') === 'true';
 
     if (user?.id && !guestMode) {
-      localStorage.setItem(`colonia_fichas_user_${user.id}`, JSON.stringify(fichas))
+      localStorage.setItem(`colonia_fichas_user_${user.id}`, JSON.stringify(fichas));
     } else {
-      localStorage.setItem('colonia_fichas_guest', JSON.stringify(fichas))
+      localStorage.setItem('colonia_fichas_guest', JSON.stringify(fichas));
     }
   } catch (e) {}
 
-  const ficha = getFicha()
+  const ficha = getFicha();
 
   if (syncTimer) {
-    clearTimeout(syncTimer)
+    clearTimeout(syncTimer);
   }
 
   syncTimer = setTimeout(() => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null')
-    const guestMode = localStorage.getItem('guestMode') === 'true'
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const guestMode = localStorage.getItem('guestMode') === 'true';
 
-    if (window.syncFichaComBackend && ficha && user?.id && !guestMode) {
-      window.syncFichaComBackend(ficha)
+    if (!ficha) return;
+
+    if (fichasEmExclusao.has(String(ficha.id))) {
+      return;
     }
-  }, 600)
+
+    if (window.syncFichaComBackend && user?.id && !guestMode) {
+      window.syncFichaComBackend(ficha);
+    }
+  }, 600);
 }
 
 function carregar() {
@@ -1965,24 +1972,37 @@ function realizarRolagem() {
 async function deletarFicha(id) {
   if (!confirm('Deseja apagar esta ficha?')) return;
 
+  const idStr = String(id);
+
+  if (syncTimer) {
+    clearTimeout(syncTimer);
+    syncTimer = null;
+  }
+
+  fichasEmExclusao.add(idStr);
+
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const guestMode = localStorage.getItem('guestMode') === 'true';
 
   if (user?.id && !guestMode && window.deleteFichaBackend) {
-    const deletouNoBackend = await window.deleteFichaBackend(id);
+    const deletouNoBackend = await window.deleteFichaBackend(idStr);
 
     if (!deletouNoBackend) {
+      fichasEmExclusao.delete(idStr);
+      alert('Não foi possível apagar a ficha no servidor. A ficha não foi removida.');
       return;
     }
   }
 
-  fichas = fichas.filter(f => String(f.id) !== String(id));
+  fichas = fichas.filter(f => String(f.id) !== idStr);
 
-  if (String(fichaAtiva) === String(id)) {
+  if (String(fichaAtiva) === idStr) {
     fichaAtiva = fichas.length ? fichas[0].id : null;
   }
 
   salvar();
+
+  fichasEmExclusao.delete(idStr);
 
   renderizarTabs();
   renderizarFichaAtiva();

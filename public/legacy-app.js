@@ -1527,6 +1527,12 @@ function buildCombateHTML(f) {
     <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:6px" id="roll-pool-info">Pool: —</div>
     <div class="roll-dice-display" id="roll-dice"></div>
     <div class="roll-result" id="roll-result"></div>
+    <div class="roll-history">
+      <div class="section-label">Histórico de Rolagens</div>
+      <div id="roll-history">
+        ${buildHistoricoRolagensHTML()}
+      </div>
+    </div>
   </div>
   <div class="card">
     <div class="section-label">Referência de Combate</div>
@@ -1953,6 +1959,38 @@ function realizarRolagem() {
 
   const passou = suc >= dif;
 
+  const nomesAtributos = {
+    fisico: 'Físico',
+    esperteza: 'Esperteza',
+    sagacidade: 'Sagacidade'
+  };
+
+  const nomesSubatributos = {
+    potencia: 'Potência',
+    agilidade: 'Agilidade',
+    vigor: 'Vigor',
+    informacoes: 'Informações',
+    tecnologia: 'Tecnologia',
+    tecnica: 'Técnica',
+    percepcao: 'Percepção',
+    labia: 'Lábia',
+    intuicao: 'Intuição'
+  };
+
+  salvarHistoricoRolagem({
+    atributo: nomesAtributos[atributoBase] || atributoBase,
+    subatributo: nomesSubatributos[sub] || sub,
+    dgReserva,
+    dgHabilidade,
+    sucessos: suc,
+    dificuldade: dif,
+    passou,
+    hora: new Date().toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  });
+
   let msg = `${suc} Sucesso${suc !== 1 ? 's' : ''} / DT ${dif} — <strong>${passou ? '✓ SUCESSO' : '✗ FALHA'}</strong>`;
 
   if (suc > dif) msg += ` (+${suc - dif} extra)`;
@@ -1964,6 +2002,74 @@ function realizarRolagem() {
     `<span style="color:${passou ? 'var(--accent)' : 'var(--accent2)'};font-size:14px">${msg}</span>`;
 
   calcRollPool();
+}
+
+function getRollHistoryKey() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const ficha = getFicha();
+
+  if (user?.id && ficha?.id) {
+    return `colonia_roll_history_user_${user.id}_ficha_${ficha.id}`;
+  }
+
+  if (ficha?.id) {
+    return `colonia_roll_history_guest_ficha_${ficha.id}`;
+  }
+
+  return 'colonia_roll_history_guest';
+}
+
+function carregarHistoricoRolagens() {
+  try {
+    return JSON.parse(localStorage.getItem(getRollHistoryKey()) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarHistoricoRolagem(entrada) {
+  const historico = carregarHistoricoRolagens();
+
+  historico.unshift(entrada);
+
+  const ultimasCinco = historico.slice(0, 5);
+
+  localStorage.setItem(getRollHistoryKey(), JSON.stringify(ultimasCinco));
+}
+
+function buildHistoricoRolagensHTML() {
+  const historico = carregarHistoricoRolagens();
+
+  if (!historico.length) {
+    return `
+      <div class="roll-history-empty">
+        Nenhuma rolagem recente.
+      </div>
+    `;
+  }
+
+  return historico.map(r => `
+    <div class="roll-history-item">
+      <div class="roll-history-top">
+        <strong>${esc(r.atributo)} / ${esc(r.subatributo)}</strong>
+        <span>${esc(r.hora)}</span>
+      </div>
+
+      <div class="roll-history-details">
+        DG Reserva: ${r.dgReserva} |
+        DG Habilidade: ${r.dgHabilidade} |
+        Sucessos: ${r.sucessos}/${r.dificuldade}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHistoricoRolagens() {
+  const el = document.getElementById('roll-history');
+
+  if (el) {
+    el.innerHTML = buildHistoricoRolagensHTML();
+  }
 }
 
 // ══════════════════════════════════════════════════════

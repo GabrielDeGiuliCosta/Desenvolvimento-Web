@@ -105,13 +105,24 @@ async function deleteSheet(req, res) {
   try {
     const { id } = req.params
 
+    const idComoNumero = Number(id)
+
+    const filtros = [
+      { localId: String(id) }
+    ]
+
+    if (
+      Number.isInteger(idComoNumero) &&
+      idComoNumero > 0 &&
+      idComoNumero <= 2147483647
+    ) {
+      filtros.push({ id: idComoNumero })
+    }
+
     let sheet = await prisma.sheet.findFirst({
       where: {
         userId: req.user.id,
-        OR: [
-          { id: Number(id) || -1 },
-          { localId: String(id) }
-        ]
+        OR: filtros
       }
     })
 

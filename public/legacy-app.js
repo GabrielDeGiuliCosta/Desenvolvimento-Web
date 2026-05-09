@@ -1991,6 +1991,8 @@ function realizarRolagem() {
     })
   });
 
+  renderHistoricoRolagens();
+
   let msg = `${suc} Sucesso${suc !== 1 ? 's' : ''} / DT ${dif} — <strong>${passou ? '✓ SUCESSO' : '✗ FALHA'}</strong>`;
 
   if (suc > dif) msg += ` (+${suc - dif} extra)`;
@@ -2034,7 +2036,11 @@ function salvarHistoricoRolagem(entrada) {
 
   const ultimasCinco = historico.slice(0, 5);
 
-  localStorage.setItem(getRollHistoryKey(), JSON.stringify(ultimasCinco));
+  try {
+    localStorage.setItem(getRollHistoryKey(), JSON.stringify(ultimasCinco));
+  } catch (e) {
+    console.error('Erro ao salvar histórico de rolagens:', e);
+  }
 }
 
 function buildHistoricoRolagensHTML() {

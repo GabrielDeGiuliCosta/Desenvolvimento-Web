@@ -1962,28 +1962,39 @@ function realizarRolagem() {
 // ══════════════════════════════════════════════════════
 // DELETAR / EXPORT / IMPORT
 // ══════════════════════════════════════════════════════
-function deletarFicha(id) {
-  if(!confirm('Deletar esta ficha? Esta ação não pode ser desfeita.'))return;
-  fichas = fichas.filter(f => f.id !== id);
+async function deletarFicha(id) {
+  if (!confirm('Deseja apagar esta ficha?')) return;
 
-  if (fichaAtiva === id) {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const guestMode = localStorage.getItem('guestMode') === 'true';
+
+  if (user?.id && !guestMode && window.deleteFichaBackend) {
+    const deletouNoBackend = await window.deleteFichaBackend(id);
+
+    if (!deletouNoBackend) {
+      return;
+    }
+  }
+
+  fichas = fichas.filter(f => String(f.id) !== String(id));
+
+  if (String(fichaAtiva) === String(id)) {
     fichaAtiva = fichas.length ? fichas[0].id : null;
   }
 
   salvar();
 
-  if (window.deleteFichaBackend) {
-    window.deleteFichaBackend(id);
-  }
-
   renderizarTabs();
   renderizarFichaAtiva();
 }
+
 function exportarFichas() {
   const blob=new Blob([JSON.stringify(fichas,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='colonia_fichas.json'; a.click();
 }
+
 function importarFichas() { document.getElementById('importInput').click(); }
+
 function lerImportacao(e) {
   const file=e.target.files[0]; if(!file)return;
   const r=new FileReader(); r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(Array.isArray(d)){ fichas=d; fichaAtiva=fichas.length?fichas[0].id:null; salvar(); renderizarTabs(); renderizarFichaAtiva(); } }catch(err){alert('Arquivo inválido.');} }; r.readAsText(file); e.target.value='';

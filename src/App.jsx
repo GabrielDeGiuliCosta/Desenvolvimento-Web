@@ -67,8 +67,10 @@ function App() {
       try {
         await deleteSheet(String(localId))
         console.log('Ficha deletada no backend:', localId)
+        return true
       } catch (error) {
         console.error('Erro ao deletar ficha no backend:', error)
+        return false
       }
     }
 

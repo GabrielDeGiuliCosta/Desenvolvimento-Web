@@ -142,6 +142,7 @@ async function deleteSheet(req, res) {
     })
   } catch (error) {
     console.error(error)
+
     return res.status(500).json({
       message: 'Erro ao deletar ficha.'
     })

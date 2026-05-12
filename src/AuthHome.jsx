@@ -121,6 +121,17 @@ function AuthHome({ onGuest, onLoginSuccess }) {
         <div id="guest-warning" className="guest-warning">
           Sem login, suas fichas serão salvas apenas neste navegador usando localStorage. Para guardar fora do navegador, use a exportação JSON. Também não terá acesso ao painel de usuário e outras funcionalidades.
         </div>
+        <footer className="auth-footer">
+          <p>
+            Este projeto foi desenvolvido exclusivamente para fins acadêmicos.
+          </p>
+
+          <p>
+            O projeto não possui qualquer afiliação oficial com o autor,
+            publicadora ou detentores da propriedade intelectual do sistema
+            Colônia RPG.
+          </p>
+        </footer>
       </section>
     </main>
   )

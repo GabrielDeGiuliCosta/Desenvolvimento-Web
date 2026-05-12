@@ -21,25 +21,33 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (modoApp === 'app') {
-      carregarLegacyApp()
+    if (modoApp !== 'app') return
 
-      const actionTimer = setTimeout(() => {
-        const action = pendingActionRef.current
+    let cancelado = false
 
-        if (!action) return
+    async function executar() {
+      await carregarLegacyApp()
 
-        if (action.type === 'new') {
-          window.novaFicha?.()
-        }
+      if (cancelado) return
 
-        if (action.type === 'open') {
-          window.abrirFichaPorId?.(action.id)
-        }
+      const action = pendingActionRef.current
+      if (!action) return
 
-        pendingActionRef.current = null
-      }, 300)
-      return () => clearTimeout(actionTimer)
+      if (action.type === 'new') {
+        window.novaFicha?.()
+      }
+
+      if (action.type === 'open') {
+        window.abrirFichaPorId?.(action.id)
+      }
+
+      pendingActionRef.current = null
+    }
+
+    executar()
+
+    return () => {
+      cancelado = true
     }
   }, [modoApp])
 
@@ -51,24 +59,54 @@ function App() {
       if (!token || guestMode || !ficha) return
 
       try {
-        await syncSheet(ficha)
+        const sheetSalva = await syncSheet(ficha)
+
+        ficha._backendId = sheetSalva.id
+        ficha._localId = sheetSalva.localId
+
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
+
+        const fichasAtualizadas = fichas.map(f => {
+          if (String(f.id) === String(ficha.id)) {
+            return {
+              ...f,
+              _backendId: sheetSalva.id,
+              _localId: sheetSalva.localId
+            }
+          }
+
+          return f
+        })
+
+        localStorage.setItem('colonia_fichas', JSON.stringify(fichasAtualizadas))
+
+        if (user?.id) {
+          localStorage.setItem(
+            `colonia_fichas_user_${user.id}`,
+            JSON.stringify(fichasAtualizadas)
+          )
+        }
+
         console.log('Ficha sincronizada:', ficha.nome || ficha.id)
       } catch (error) {
         console.error('Erro ao sincronizar ficha:', error)
       }
     }
 
-    window.deleteFichaBackend = async function (localId) {
+    window.deleteFichaBackend = async function (idParaDeletar) {
       const token = localStorage.getItem('token')
       const guestMode = localStorage.getItem('guestMode') === 'true'
 
-      if (!token || guestMode) return
+      if (!token || guestMode) return true
 
       try {
-        await deleteSheet(String(localId))
-        console.log('Ficha deletada no backend:', localId)
+        await deleteSheet(String(idParaDeletar))
+        console.log('Ficha deletada no backend:', idParaDeletar)
+        return true
       } catch (error) {
         console.error('Erro ao deletar ficha no backend:', error)
+        return false
       }
     }
 
@@ -80,15 +118,22 @@ function App() {
 
   function carregarLegacyApp() {
     const scriptId = 'legacy-app-script'
+    const existente = document.getElementById(scriptId)
 
-    if (document.getElementById(scriptId)) return
+    if (existente) {
+      return Promise.resolve()
+    }
 
-    const script = document.createElement('script')
-    script.id = scriptId
-    script.src = '/legacy-app.js'
-    script.async = false
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.id = scriptId
+      script.src = '/legacy-app.js'
+      script.async = false
+      script.onload = resolve
+      script.onerror = reject
 
-    document.body.appendChild(script)
+      document.body.appendChild(script)
+    })
   }
 
   async function iniciarComoLogado() {
@@ -129,7 +174,12 @@ function App() {
     if (!user?.id) return []
 
     const sheets = await getSheets()
-    const fichas = sheets.map(sheet => sheet.data)
+
+    const fichas = sheets.map(sheet => ({
+      ...sheet.data,
+      _backendId: sheet.id,
+      _localId: sheet.localId
+    }))
 
     const userKey = `colonia_fichas_user_${user.id}`
 
@@ -192,6 +242,95 @@ function App() {
     setModoApp('app')
   }
 
+  function importarJsonNoPainel() {
+    const input = document.getElementById('panelImportInput')
+
+    if (input) {
+      input.value = ''
+      input.click()
+    }
+  }
+
+  function fichaValida(ficha) {
+    if (!ficha || typeof ficha !== 'object' || Array.isArray(ficha)) {
+      return false
+    }
+
+    const camposMinimos = [
+      'nome',
+      'nivel',
+      'fisico',
+      'esperteza',
+      'sagacidade'
+    ]
+
+    return camposMinimos.some(campo => campo in ficha)
+  }
+
+  async function lerImportacaoPainel(e) {
+    const file = e.target.files?.[0]
+
+    if (!file) return
+
+    try {
+      const texto = await file.text()
+      const json = JSON.parse(texto)
+
+      let fichasImportadas = []
+
+      if (Array.isArray(json)) {
+        fichasImportadas = json
+      } else if (Array.isArray(json.fichas)) {
+        fichasImportadas = json.fichas
+      } else {
+        fichasImportadas = [json]
+      }
+
+      const fichasValidas = fichasImportadas.filter(fichaValida)
+
+      if (fichasValidas.length === 0) {
+        alert('O arquivo JSON importado não possui um formato válido de ficha.')
+        return
+      }
+
+      const fichasAtuais = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
+
+      const novasFichas = fichasValidas.map((ficha, index) => ({
+        ...ficha,
+        id: Date.now() + index,
+        nome: ficha.nome || 'Ficha Importada'
+      }))
+
+      const fichasAtualizadas = [...fichasAtuais, ...novasFichas]
+
+      localStorage.setItem('colonia_fichas', JSON.stringify(fichasAtualizadas))
+
+      const user = JSON.parse(localStorage.getItem('user') || 'null')
+
+      if (user?.id) {
+        localStorage.setItem(
+          `colonia_fichas_user_${user.id}`,
+          JSON.stringify(fichasAtualizadas)
+        )
+      }
+
+      for (const ficha of novasFichas) {
+        await syncSheet(ficha)
+      }
+
+      setPersonagens(fichasAtualizadas)
+
+      alert(
+        novasFichas.length === 1
+          ? 'Ficha importada com sucesso.'
+          : `${novasFichas.length} fichas importadas com sucesso.`
+      )
+    } catch (error) {
+      console.error(error)
+      alert('Não foi possível importar o arquivo. Verifique se ele é um JSON válido.')
+    }
+  }
+
   function voltarPainel() {
     const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
     setPersonagens(fichas)
@@ -210,13 +349,24 @@ function App() {
     const user = JSON.parse(localStorage.getItem('user') || 'null')
 
     return (
+      <>
       <UserPanel
         user={user}
         personagens={personagens}
         onOpenCharacter={abrirFicha}
         onNewCharacter={criarPersonagemLogado}
+        onImport={importarJsonNoPainel}
         onLogout={sair}
       />
+
+      <input
+        id="panelImportInput"
+        type="file"
+        accept=".json,application/json"
+        style={{ display: 'none' }}
+        onChange={lerImportacaoPainel}
+      />
+    </>
     )
   }
 
@@ -310,10 +460,6 @@ function App() {
         ></div>
       ) : (
         <div id="tabsBar" hidden></div>
-      )}
-
-      {!isGuest && (
-        <div id="tabsBar" style={{ display: 'none' }}></div>
       )}
 
       <main className="main" id="mainContent" aria-live="polite"></main>

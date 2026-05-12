@@ -105,15 +105,31 @@ async function deleteSheet(req, res) {
   try {
     const { id } = req.params
 
-    let sheet = await prisma.sheet.findFirst({
-      where: {
-        userId: req.user.id,
-        OR: [
-          { id: Number(id) || -1 },
-          { localId: String(id) }
-        ]
-      }
-    })
+    const idComoNumero = Number(id)
+
+    let sheet = null
+
+    if (
+      Number.isInteger(idComoNumero) &&
+      idComoNumero > 0 &&
+      idComoNumero <= 2147483647
+    ) {
+      sheet = await prisma.sheet.findFirst({
+        where: {
+          id: idComoNumero,
+          userId: req.user.id
+        }
+      })
+    }
+
+    if (!sheet) {
+      sheet = await prisma.sheet.findFirst({
+        where: {
+          userId: req.user.id,
+          localId: String(id)
+        }
+      })
+    }
 
     if (!sheet) {
       const sheets = await prisma.sheet.findMany({
@@ -142,6 +158,7 @@ async function deleteSheet(req, res) {
     })
   } catch (error) {
     console.error(error)
+
     return res.status(500).json({
       message: 'Erro ao deletar ficha.'
     })

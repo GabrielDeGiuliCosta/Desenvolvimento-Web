@@ -339,6 +339,9 @@ const MODS_EQUIP = {
 // ══════════════════════════════════════════════════════
 let fichas = [];
 let fichaAtiva = null;
+function jsArg(valor) {
+  return JSON.stringify(valor);
+}
 
 function novaFicha() {
   const id = Date.now();
@@ -371,35 +374,42 @@ function criarFichaVazia(id) {
 
 function getFicha() { return fichas.find(f=>f.id===fichaAtiva); }
 let syncTimer = null;
+const fichasEmExclusao = new Set();
 
 function salvar() {
   try {
-    localStorage.setItem('colonia_fichas', JSON.stringify(fichas))
+    localStorage.setItem('colonia_fichas', JSON.stringify(fichas));
 
-    const user = JSON.parse(localStorage.getItem('user') || 'null')
-    const guestMode = localStorage.getItem('guestMode') === 'true'
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const guestMode = localStorage.getItem('guestMode') === 'true';
 
     if (user?.id && !guestMode) {
-      localStorage.setItem(`colonia_fichas_user_${user.id}`, JSON.stringify(fichas))
+      localStorage.setItem(`colonia_fichas_user_${user.id}`, JSON.stringify(fichas));
     } else {
-      localStorage.setItem('colonia_fichas_guest', JSON.stringify(fichas))
+      localStorage.setItem('colonia_fichas_guest', JSON.stringify(fichas));
     }
   } catch (e) {}
 
-  const ficha = getFicha()
+  const ficha = getFicha();
 
   if (syncTimer) {
-    clearTimeout(syncTimer)
+    clearTimeout(syncTimer);
   }
 
   syncTimer = setTimeout(() => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null')
-    const guestMode = localStorage.getItem('guestMode') === 'true'
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const guestMode = localStorage.getItem('guestMode') === 'true';
 
-    if (window.syncFichaComBackend && ficha && user?.id && !guestMode) {
-      window.syncFichaComBackend(ficha)
+    if (!ficha) return;
+
+    if (fichasEmExclusao.has(String(ficha.id))) {
+      return;
     }
-  }, 600)
+
+    if (window.syncFichaComBackend && user?.id && !guestMode) {
+      window.syncFichaComBackend(ficha);
+    }
+  }, 600);
 }
 
 function carregar() {
@@ -456,7 +466,7 @@ function buildFichaHTML(f) {
   return `
   <div class="page-tabs">
     ${pages.map((p,i)=>`<button class="page-tab ${f._paginaAtiva===p?'active':''}" onclick="mudarPagina('${p}')">${labels[i]}</button>`).join('')}
-    <button class="btn danger" style="margin-left:auto" onclick="deletarFicha(${f.id})">Deletar</button>
+    <button class="btn danger" style="margin-left:auto" onclick="deletarFicha(${jsArg(f.id)})">Deletar</button>
   </div>
   <div class="page-section ${f._paginaAtiva==='principal'?'active':''}" id="pg-principal">${buildPrincipalHTML(f)}</div>
   <div class="page-section ${f._paginaAtiva==='habilidades'?'active':''}" id="pg-habilidades">${buildHabilidadesHTML(f)}</div>
@@ -1520,6 +1530,12 @@ function buildCombateHTML(f) {
     <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:6px" id="roll-pool-info">Pool: —</div>
     <div class="roll-dice-display" id="roll-dice"></div>
     <div class="roll-result" id="roll-result"></div>
+    <div class="roll-history">
+      <div class="section-label">Histórico de Rolagens</div>
+      <div id="roll-history">
+        ${buildHistoricoRolagensHTML()}
+      </div>
+    </div>
   </div>
   <div class="card">
     <div class="section-label">Referência de Combate</div>
@@ -1916,7 +1932,7 @@ function realizarRolagem() {
   }
 
   if (newDG > 0) {
-    f.dg_reserva += newDG;
+    f.dg_reserva = (Number(f.dg_reserva) || 0) + newDG;
   }
 
   salvar();
@@ -1946,6 +1962,40 @@ function realizarRolagem() {
 
   const passou = suc >= dif;
 
+  const nomesAtributos = {
+    fisico: 'Físico',
+    esperteza: 'Esperteza',
+    sagacidade: 'Sagacidade'
+  };
+
+  const nomesSubatributos = {
+    potencia: 'Potência',
+    agilidade: 'Agilidade',
+    vigor: 'Vigor',
+    informacoes: 'Informações',
+    tecnologia: 'Tecnologia',
+    tecnica: 'Técnica',
+    percepcao: 'Percepção',
+    labia: 'Lábia',
+    intuicao: 'Intuição'
+  };
+
+  salvarHistoricoRolagem({
+    atributo: nomesAtributos[atributoBase] || atributoBase,
+    subatributo: nomesSubatributos[sub] || sub,
+    dgReserva,
+    dgHabilidade,
+    sucessos: suc,
+    dificuldade: dif,
+    passou,
+    hora: new Date().toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  });
+
+  renderHistoricoRolagens();
+
   let msg = `${suc} Sucesso${suc !== 1 ? 's' : ''} / DT ${dif} — <strong>${passou ? '✓ SUCESSO' : '✗ FALHA'}</strong>`;
 
   if (suc > dif) msg += ` (+${suc - dif} extra)`;
@@ -1959,31 +2009,131 @@ function realizarRolagem() {
   calcRollPool();
 }
 
+function getRollHistoryKey() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const ficha = getFicha();
+
+  if (user?.id && ficha?.id) {
+    return `colonia_roll_history_user_${user.id}_ficha_${ficha.id}`;
+  }
+
+  if (ficha?.id) {
+    return `colonia_roll_history_guest_ficha_${ficha.id}`;
+  }
+
+  return 'colonia_roll_history_guest';
+}
+
+function carregarHistoricoRolagens() {
+  try {
+    return JSON.parse(localStorage.getItem(getRollHistoryKey()) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarHistoricoRolagem(entrada) {
+  const historico = carregarHistoricoRolagens();
+
+  historico.unshift(entrada);
+
+  const ultimasCinco = historico.slice(0, 5);
+
+  try {
+    localStorage.setItem(getRollHistoryKey(), JSON.stringify(ultimasCinco));
+  } catch (e) {
+    console.error('Erro ao salvar histórico de rolagens:', e);
+  }
+}
+
+function buildHistoricoRolagensHTML() {
+  const historico = carregarHistoricoRolagens();
+
+  if (!historico.length) {
+    return `
+      <div class="roll-history-empty">
+        Nenhuma rolagem recente.
+      </div>
+    `;
+  }
+
+  return historico.map(r => `
+    <div class="roll-history-item">
+      <div class="roll-history-top">
+        <strong>${esc(r.atributo)} / ${esc(r.subatributo)}</strong>
+        <span>${esc(r.hora)}</span>
+      </div>
+
+      <div class="roll-history-details">
+        DG Reserva: ${r.dgReserva} |
+        DG Habilidade: ${r.dgHabilidade} |
+        Sucessos: ${r.sucessos}/${r.dificuldade}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHistoricoRolagens() {
+  const el = document.getElementById('roll-history');
+
+  if (el) {
+    el.innerHTML = buildHistoricoRolagensHTML();
+  }
+}
+
 // ══════════════════════════════════════════════════════
 // DELETAR / EXPORT / IMPORT
 // ══════════════════════════════════════════════════════
-function deletarFicha(id) {
-  if(!confirm('Deletar esta ficha? Esta ação não pode ser desfeita.'))return;
-  fichas = fichas.filter(f => f.id !== id);
+async function deletarFicha(id) {
+  if (!confirm('Deseja apagar esta ficha?')) return;
 
-  if (fichaAtiva === id) {
+  const idStr = String(id);
+
+  if (syncTimer) {
+    clearTimeout(syncTimer);
+    syncTimer = null;
+  }
+
+  fichasEmExclusao.add(idStr);
+
+  const fichaParaDeletar = fichas.find(f => String(f.id) === idStr);
+
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const guestMode = localStorage.getItem('guestMode') === 'true';
+
+  if (user?.id && !guestMode && window.deleteFichaBackend) {
+    const idBackendOuLocal = fichaParaDeletar?._backendId || idStr;
+
+    const deletouNoBackend = await window.deleteFichaBackend(idBackendOuLocal);
+
+    if (!deletouNoBackend) {
+      fichasEmExclusao.delete(idStr);
+      alert('Não foi possível apagar a ficha no servidor. A ficha não foi removida.');
+      return;
+    }
+  }
+
+  fichas = fichas.filter(f => String(f.id) !== idStr);
+
+  if (String(fichaAtiva) === idStr) {
     fichaAtiva = fichas.length ? fichas[0].id : null;
   }
 
   salvar();
 
-  if (window.deleteFichaBackend) {
-    window.deleteFichaBackend(id);
-  }
+  fichasEmExclusao.delete(idStr);
 
   renderizarTabs();
   renderizarFichaAtiva();
 }
+
 function exportarFichas() {
   const blob=new Blob([JSON.stringify(fichas,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='colonia_fichas.json'; a.click();
 }
+
 function importarFichas() { document.getElementById('importInput').click(); }
+
 function lerImportacao(e) {
   const file=e.target.files[0]; if(!file)return;
   const r=new FileReader(); r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(Array.isArray(d)){ fichas=d; fichaAtiva=fichas.length?fichas[0].id:null; salvar(); renderizarTabs(); renderizarFichaAtiva(); } }catch(err){alert('Arquivo inválido.');} }; r.readAsText(file); e.target.value='';
@@ -2002,7 +2152,7 @@ window.exportarFichas = exportarFichas
 window.importarFichas = importarFichas
 window.lerImportacao = lerImportacao
 window.abrirFichaPorId = function(id) {
-  fichaAtiva = Number(id);
+  fichaAtiva = id;
   localStorage.setItem('colonia_ficha_ativa', String(id));
   renderizarTabs();
   renderizarFichaAtiva();

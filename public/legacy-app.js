@@ -339,6 +339,9 @@ const MODS_EQUIP = {
 // ══════════════════════════════════════════════════════
 let fichas = [];
 let fichaAtiva = null;
+function jsArg(valor) {
+  return JSON.stringify(valor);
+}
 
 function novaFicha() {
   const id = Date.now();
@@ -463,7 +466,7 @@ function buildFichaHTML(f) {
   return `
   <div class="page-tabs">
     ${pages.map((p,i)=>`<button class="page-tab ${f._paginaAtiva===p?'active':''}" onclick="mudarPagina('${p}')">${labels[i]}</button>`).join('')}
-    <button class="btn danger" style="margin-left:auto" onclick="deletarFicha(${f.id})">Deletar</button>
+    <button class="btn danger" style="margin-left:auto" onclick="deletarFicha(${jsArg(f.id)})">Deletar</button>
   </div>
   <div class="page-section ${f._paginaAtiva==='principal'?'active':''}" id="pg-principal">${buildPrincipalHTML(f)}</div>
   <div class="page-section ${f._paginaAtiva==='habilidades'?'active':''}" id="pg-habilidades">${buildHabilidadesHTML(f)}</div>
@@ -1929,7 +1932,7 @@ function realizarRolagem() {
   }
 
   if (newDG > 0) {
-    f.dg_reserva += newDG;
+    f.dg_reserva = (Number(f.dg_reserva) || 0) + newDG;
   }
 
   salvar();
@@ -2149,7 +2152,7 @@ window.exportarFichas = exportarFichas
 window.importarFichas = importarFichas
 window.lerImportacao = lerImportacao
 window.abrirFichaPorId = function(id) {
-  fichaAtiva = Number(id);
+  fichaAtiva = id;
   localStorage.setItem('colonia_ficha_ativa', String(id));
   renderizarTabs();
   renderizarFichaAtiva();

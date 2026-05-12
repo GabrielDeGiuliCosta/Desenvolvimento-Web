@@ -21,25 +21,33 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (modoApp === 'app') {
-      carregarLegacyApp()
+    if (modoApp !== 'app') return
 
-      const actionTimer = setTimeout(() => {
-        const action = pendingActionRef.current
+    let cancelado = false
 
-        if (!action) return
+    async function executar() {
+      await carregarLegacyApp()
 
-        if (action.type === 'new') {
-          window.novaFicha?.()
-        }
+      if (cancelado) return
 
-        if (action.type === 'open') {
-          window.abrirFichaPorId?.(action.id)
-        }
+      const action = pendingActionRef.current
+      if (!action) return
 
-        pendingActionRef.current = null
-      }, 300)
-      return () => clearTimeout(actionTimer)
+      if (action.type === 'new') {
+        window.novaFicha?.()
+      }
+
+      if (action.type === 'open') {
+        window.abrirFichaPorId?.(action.id)
+      }
+
+      pendingActionRef.current = null
+    }
+
+    executar()
+
+    return () => {
+      cancelado = true
     }
   }, [modoApp])
 
@@ -52,6 +60,9 @@ function App() {
 
       try {
         const sheetSalva = await syncSheet(ficha)
+
+        ficha._backendId = sheetSalva.id
+        ficha._localId = sheetSalva.localId
 
         const user = JSON.parse(localStorage.getItem('user') || 'null')
         const fichas = JSON.parse(localStorage.getItem('colonia_fichas') || '[]')
@@ -107,15 +118,22 @@ function App() {
 
   function carregarLegacyApp() {
     const scriptId = 'legacy-app-script'
+    const existente = document.getElementById(scriptId)
 
-    if (document.getElementById(scriptId)) return
+    if (existente) {
+      return Promise.resolve()
+    }
 
-    const script = document.createElement('script')
-    script.id = scriptId
-    script.src = '/legacy-app.js'
-    script.async = false
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.id = scriptId
+      script.src = '/legacy-app.js'
+      script.async = false
+      script.onload = resolve
+      script.onerror = reject
 
-    document.body.appendChild(script)
+      document.body.appendChild(script)
+    })
   }
 
   async function iniciarComoLogado() {

@@ -707,3 +707,22 @@ textarea:focus-visible {
   padding: 24px 20px;
   margin-bottom: 14px;
 }
+
+/*FOOTER*/
+.auth-footer {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-footer p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+  font-family: var(--font-mono);
+}

@@ -438,15 +438,26 @@ function App() {
           )}
 
           {!isGuest && (
-            <UserMenu
-              user={user}
-              onPanel={voltarPainel}
-              onNewCharacter={criarPersonagemLogado}
-              onExport={exportar}
-              onImport={importar}
-              onLogout={sair}
-              showPanelOption={true}
-            />
+            <>
+              <button
+                className="btn"
+                type="button"
+                onClick={voltarPainel}
+                aria-label="Voltar para o painel de personagens"
+              >
+                Painel
+              </button>
+
+              <UserMenu
+                user={user}
+                onPanel={voltarPainel}
+                onNewCharacter={criarPersonagemLogado}
+                onExport={exportar}
+                onImport={importar}
+                onLogout={sair}
+                showPanelOption={false}
+              />
+            </>
           )}
         </nav>
       </header>

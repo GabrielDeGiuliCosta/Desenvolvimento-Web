@@ -2128,15 +2128,85 @@ async function deletarFicha(id) {
 }
 
 function exportarFichas() {
-  const blob=new Blob([JSON.stringify(fichas,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='colonia_fichas.json'; a.click();
+  const ficha = getFicha();
+
+  if (!ficha) {
+    mostrarAviso?.('Nenhuma ficha aberta para exportar.', 'erro');
+    return;
+  }
+
+  const nomeArquivo = `colonia_${(ficha.nome || 'ficha')
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^\w-]/g, '')}.json`;
+
+  const blob = new Blob([JSON.stringify(ficha, null, 2)], {
+    type: 'application/json'
+  });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nomeArquivo;
+  a.click();
+
+  URL.revokeObjectURL(a.href);
 }
 
 function importarFichas() { document.getElementById('importInput').click(); }
 
+function fichaImportadaValida(ficha) {
+  if (!ficha || typeof ficha !== 'object' || Array.isArray(ficha)) {
+    return false;
+  }
+
+  const camposMinimos = [
+    'nome',
+    'nivel',
+    'fisico',
+    'esperteza',
+    'sagacidade'
+  ];
+
+  return camposMinimos.some(campo => campo in ficha);
+}
+
 function lerImportacao(e) {
-  const file=e.target.files[0]; if(!file)return;
-  const r=new FileReader(); r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(Array.isArray(d)){ fichas=d; fichaAtiva=fichas.length?fichas[0].id:null; salvar(); renderizarTabs(); renderizarFichaAtiva(); } }catch(err){alert('Arquivo inválido.');} }; r.readAsText(file); e.target.value='';
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const r = new FileReader();
+
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+
+      if (!fichaImportadaValida(d)) {
+        mostrarAviso?.('O arquivo JSON não possui o formato esperado de uma ficha.', 'erro');
+        return;
+      }
+
+      const fichaImportada = {
+        ...d,
+        id: Date.now(),
+        nome: d.nome || 'Ficha Importada'
+      };
+
+      fichas.push(fichaImportada);
+      fichaAtiva = fichaImportada.id;
+
+      salvar();
+      renderizarTabs();
+      renderizarFichaAtiva();
+
+      mostrarAviso?.('Ficha importada com sucesso.', 'sucesso');
+    } catch (err) {
+      mostrarAviso?.('Arquivo inválido. Verifique se ele é um JSON válido.', 'erro');
+    }
+  };
+
+  r.readAsText(file);
+  e.target.value = '';
 }
 
 function esc(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

@@ -2,11 +2,11 @@
 
 ## Sobre o Projeto
 
-Este projeto é um site de gerenciamento de fichas para o sistema de RPG **Colônia RPG**. O objetivo principal da aplicação é permitir que jogadores criem, editem, salvem e organizem suas fichas de maneira prática diretamente pelo navegador.
+Este projeto é um sistema web para criação, gerenciamento e armazenamento de fichas do sistema de RPG **Colônia RPG**.
 
-O sistema foi desenvolvido com foco em usabilidade e acessibilidade para mesas online e presenciais, trazendo uma interface inspirada na identidade visual do próprio sistema de RPG e centralizando diversas funcionalidades importantes em um único lugar.
+A aplicação foi desenvolvida como um projeto acadêmico e combina uma interface moderna em React com um sistema legado em JavaScript responsável pela lógica principal da ficha. O objetivo do projeto é permitir que jogadores criem, editem, organizem e salvem personagens diretamente pelo navegador, tanto localmente quanto através de sincronização online com backend.
 
-Além da criação e edição de personagens, o projeto também oferece suporte para autenticação de usuários, salvamento local e armazenamento online das fichas.
+O sistema foi estruturado para funcionar tanto para usuários autenticados quanto para usuários convidados, permitindo uso offline/local através do `localStorage` e sincronização automática com banco de dados para contas registradas.
 
 ---
 
@@ -14,49 +14,62 @@ Além da criação e edição de personagens, o projeto também oferece suporte 
 
 ## Gerenciamento de Fichas
 
-* Criação de múltiplas fichas de personagem.
-* Sistema de abas para alternar rapidamente entre personagens.
+* Criação e gerenciamento de múltiplas fichas.
+* Sistema de abas para alternar entre personagens.
 * Salvamento automático das alterações.
-* Exportação e importação de fichas em formato JSON.
-* Compatibilidade com armazenamento local e banco de dados.
+* Importação e exportação de fichas em JSON.
+* Compatibilidade entre armazenamento local e online.
+* Sincronização automática de fichas com o backend.
+* Merge automático de fichas locais ao criar/login em uma conta.
 
 ---
 
 ## Sistema de Usuários
 
-* Cadastro de contas.
-* Login e autenticação.
-* Armazenamento de fichas por usuário.
-* Separação de fichas entre contas diferentes.
-* Persistência de dados entre sessões.
+* Cadastro de usuários.
+* Login com autenticação JWT.
+* Persistência de sessão.
+* Separação correta de fichas entre contas diferentes.
+* Painel de usuário para gerenciamento de personagens.
 
 ---
 
 ## Painel de Personagens
 
 * Visualização das fichas em formato de cartões.
-* Organização inicial dos personagens do usuário.
-* Acesso rápido às fichas salvas.
+* Abertura rápida de personagens.
+* Criação de novas fichas diretamente pelo painel.
 * Interface integrada ao restante do site.
 
 ---
 
-## Sistema de Recursos e Inventário
+## Sistema da Ficha
 
-* Gerenciamento de armas, proteções, equipamentos e talentos.
-* Sistema de mods aplicados diretamente aos recursos.
-* Controle de atributos e recursos do personagem.
-* Sistema de ocupações e arquétipos.
+### Recursos e Inventário
 
----
+* Sistema de armas, proteções, equipamentos e talentos.
+* Aplicação de mods diretamente nos recursos.
+* Controle de atributos, subatributos e recursos.
+* Controle de Bio-Pontos, Fôlego, Defesa e Carga de Energia.
+* Limite visual de Dados de Gambiarra.
 
-## Sistema de Rolagens
+### Ocupações e Arquétipos
+
+* Sistema de ocupações com seleção por lista.
+* Suporte para segunda ocupação.
+* Sistema de arquétipos com expansão por nível.
+* Filtragem automática de habilidades por ocupação.
+* Filtragem automática de talentos por arquétipo.
+
+### Sistema de Rolagens
 
 * Rolagem automática de dados.
-* Suporte para vantagem e desvantagem.
-* Sistema de Dados de Gambiarra.
+* Sistema de vantagem e desvantagem.
+* Uso separado de Dados de Gambiarra.
 * Aplicação automática de modificadores.
-* Controle de desastres e efeitos especiais.
+* Sistema de desastres.
+* Histórico local das últimas rolagens.
+* Consumo automático de Dados de Gambiarra de reserva.
 
 ---
 
@@ -68,6 +81,7 @@ Além da criação e edição de personagens, o projeto também oferece suporte 
 * JavaScript
 * HTML5
 * CSS3
+* Vite
 
 ## Backend
 
@@ -77,72 +91,71 @@ Além da criação e edição de personagens, o projeto também oferece suporte 
 ## Banco de Dados
 
 * Prisma ORM
-* SQLite
+* PostgreSQL
 
-## Ferramentas e Bibliotecas
+## Bibliotecas e Ferramentas
 
-* JWT (autenticação)
+* JWT
 * bcrypt
 * dotenv
-* CORS
-* Nodemon
+* cors
+* nodemon
 
 ---
 
 # Estrutura Geral do Projeto
 
-O projeto é dividido em duas partes principais:
-
 ```txt
 frontend/
 backend/
+public/
 ```
 
 ## Frontend
 
-Responsável pela interface visual, gerenciamento da ficha, renderização dos componentes e comunicação com o backend.
+Responsável pela interface React, autenticação, painel de usuário e integração com o sistema legado da ficha.
+
+## Public
+
+Contém o `legacy-app.js`, responsável pela lógica principal da ficha, renderização dinâmica e sistema de rolagens.
 
 ## Backend
 
-Responsável pela autenticação, gerenciamento de usuários, armazenamento das fichas e comunicação com o banco de dados.
+Responsável pela autenticação, gerenciamento de usuários, persistência das fichas e sincronização com o frontend.
 
 ---
 
-# Objetivos do Projeto
+# API do Backend
 
-O projeto foi desenvolvido com os seguintes objetivos:
+## Rotas de Autenticação
 
-* Facilitar o gerenciamento de personagens.
-* Modernizar o uso de fichas do sistema.
-* Centralizar funcionalidades importantes em uma única aplicação.
-* Permitir uso local e online.
-* Criar uma base expansível para futuras funcionalidades.
+```http
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+```
 
----
+## Rotas de Fichas
 
-# Possíveis Melhorias Futuras
-
-O projeto ainda possui diversas possibilidades de expansão e melhorias, incluindo:
-
-* Compartilhamento de fichas entre jogadores.
-* Sistema de campanha e grupos.
-* Painel de mestre.
-* Sistema de permissões.
-* Chat integrado.
-* Histórico de alterações das fichas.
-* Upload de imagens e avatares.
-* Melhorias visuais e animações.
-* Sistema offline mais robusto.
-* Sincronização em tempo real.
-* Publicação online da aplicação.
-* Migração para PostgreSQL.
-* Sistema de backup automático.
-* Sistema de pesquisa e filtros no painel de personagens.
+```http
+GET    /api/sheets
+POST   /api/sheets
+GET    /api/sheets/:id
+PUT    /api/sheets/:id
+DELETE /api/sheets/:id
+```
 
 ---
 
 # Como Executar o Projeto
 
+## Requisitos
+
+* Node.js instalado
+* npm instalado
+
+---
+
 ## Frontend
 
 ```bash
@@ -150,27 +163,99 @@ npm install
 npm run dev
 ```
 
+O frontend normalmente será iniciado em:
+
+```txt
+http://localhost:5173
+```
+
+---
+
 ## Backend
+
+Entre na pasta backend:
+
+```bash
+cd backend
+```
+
+Instale as dependências:
 
 ```bash
 npm install
+```
+
+Configure o banco de dados Prisma:
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+Inicie o servidor:
+
+```bash
 npm run dev
 ```
+
+O backend normalmente será iniciado em:
+
+```txt
+http://localhost:3000
+```
+
+---
+
+# Funcionamento do Salvamento
+
+## Usuários Convidados
+
+Usuários sem conta podem utilizar normalmente o sistema.
+
+As fichas serão armazenadas:
+
+* No `localStorage`
+* Ou através de exportação manual em JSON
+
+---
+
+## Usuários Logados
+
+Usuários autenticados possuem:
+
+* Salvamento automático no backend
+* Sincronização entre sessões
+* Painel de gerenciamento de personagens
+* Persistência online das fichas
+
+---
+
+# Possíveis Melhorias Futuras
+
+O projeto ainda pode receber novas funcionalidades, incluindo:
+
+* Compartilhamento de fichas.
+* Sistema de campanhas.
+* Painel de mestre.
+* Upload de avatar.
+* Sistema de permissões.
+* Pesquisa e filtros avançados.
+* Melhorias visuais e animações.
 
 ---
 
 # Observações
 
-O projeto utiliza salvamento local no navegador através de `localStorage`, além de sincronização com o banco de dados para usuários autenticados.
+O projeto mistura uma base React moderna com lógica legada em JavaScript puro (`legacy-app.js`).
 
-Usuários sem conta ainda podem utilizar o sistema normalmente, porém suas fichas serão armazenadas apenas localmente ou através da exportação manual em JSON.
+Grande parte da lógica principal da ficha ainda depende do sistema legado, enquanto o React atua principalmente como camada de interface, autenticação e gerenciamento de usuários.
 
 ---
 
 # Aviso Legal
 
-Este projeto foi desenvolvido como parte de um projeto acadêmico/faculdade.
+Este projeto foi desenvolvido para fins acadêmicos e educacionais.
 
-O projeto não possui qualquer afiliação oficial com o autor original do sistema de RPG, Enzo G. Gazotto, nem com sua publicadora, Editora Caleidoscópio.
+O projeto não possui qualquer afiliação oficial com o autor original do sistema de RPG, Enzo G. Gazotto, nem com a Editora Caleidoscópio.
 
 Todos os direitos relacionados ao sistema, ambientação, regras e materiais oficiais pertencem aos seus respectivos criadores e proprietários.

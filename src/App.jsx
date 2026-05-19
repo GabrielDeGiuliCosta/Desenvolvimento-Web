@@ -377,6 +377,15 @@ function App() {
         onLogout={sair}
       />
 
+      <button
+        className="theme-floating-button"
+        type="button"
+        onClick={alternarTema}
+        aria-label="Alternar tema claro e escuro"
+      >
+        {temaEscuro ? '☾' : '☀'}
+      </button>
+
       <input
         id="panelImportInput"
         type="file"
@@ -390,10 +399,21 @@ function App() {
 
   if (modoApp !== 'app') {
     return (
-      <AuthHome
-        onGuest={iniciarComoConvidado}
-        onLoginSuccess={iniciarComoLogado}
-      />
+      <>
+        <AuthHome
+          onGuest={iniciarComoConvidado}
+          onLoginSuccess={iniciarComoLogado}
+        />
+
+        <button
+          className="theme-floating-button"
+          type="button"
+          onClick={alternarTema}
+          aria-label="Alternar tema claro e escuro"
+        >
+          {temaEscuro ? '☾' : '☀'}
+        </button>
+      </>
     )
   }
 
@@ -482,7 +502,6 @@ function App() {
                 onExport={exportar}
                 onImport={importar}
                 onOpenSettings={() => setConfigOpen(true)}
-                temaEscuro={temaEscuro}
                 onLogout={sair}
                 showPanelOption={false}
               />

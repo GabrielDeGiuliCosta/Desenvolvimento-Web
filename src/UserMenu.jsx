@@ -7,7 +7,6 @@ function UserMenu({
   onExport,
   onImport,
   onOpenSettings,
-  temaEscuro,
   onLogout,
   showPanelOption = true,
   showExportOption = true
@@ -33,10 +32,6 @@ function UserMenu({
           )}
 
           <button type="button" onClick={onImport}>Importar JSON</button>
-
-          <button type="button" onClick={onOpenSettings}>
-            {temaEscuro ? 'Modo Claro ☀' : 'Modo Escuro ☾'}
-          </button>
 
           <button type="button" onClick={onOpenSettings}>
             Configurações

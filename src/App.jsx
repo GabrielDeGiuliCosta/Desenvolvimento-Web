@@ -7,6 +7,10 @@ import { getSheets, getToken, removeToken, syncSheet, deleteSheet } from './serv
 function App() {
   const [authChecked, setAuthChecked] = useState(false)
   const [modoApp, setModoApp] = useState(null)
+  const [temaEscuro, setTemaEscuro] = useState(() => {
+    return localStorage.getItem('colonia_theme') === 'dark'
+  })
+  const [configOpen, setConfigOpen] = useState(false)
   const [personagens, setPersonagens] = useState([])
   const pendingActionRef = useRef(null)
 
@@ -50,6 +54,16 @@ function App() {
       cancelado = true
     }
   }, [modoApp])
+
+  useEffect(() => {
+    if (temaEscuro) {
+      document.body.classList.add('dark-theme')
+      localStorage.setItem('colonia_theme', 'dark')
+    } else {
+      document.body.classList.remove('dark-theme')
+      localStorage.setItem('colonia_theme', 'light')
+    }
+  }, [temaEscuro])
 
   useEffect(() => {
     window.syncFichaComBackend = async function (ficha) {
@@ -203,6 +217,10 @@ function App() {
 
   function lerArquivoImportado(e) {
     window.lerImportacao?.(e)
+  }
+
+  function alternarTema() {
+    setTemaEscuro(v => !v)
   }
 
   function sair() {
@@ -427,6 +445,15 @@ function App() {
               </button>
 
               <button
+                className="btn"
+                type="button"
+                onClick={() => setConfigOpen(true)}
+                aria-label="Abrir configurações"
+              >
+                Configurações
+              </button>
+
+              <button
                 className="btn danger"
                 type="button"
                 onClick={sair}
@@ -454,6 +481,8 @@ function App() {
                 onNewCharacter={criarPersonagemLogado}
                 onExport={exportar}
                 onImport={importar}
+                onOpenSettings={() => setConfigOpen(true)}
+                temaEscuro={temaEscuro}
                 onLogout={sair}
                 showPanelOption={false}
               />
@@ -483,6 +512,37 @@ function App() {
         onChange={lerArquivoImportado}
         aria-label="Selecionar arquivo JSON para importar fichas"
       />
+
+      <button
+        className="theme-floating-button"
+        type="button"
+        onClick={alternarTema}
+        aria-label="Alternar tema claro e escuro"
+      >
+        {temaEscuro ? '☾' : '☀'}
+      </button>
+
+      <div className={`settings-modal ${configOpen ? '' : 'hidden'}`}>
+        <div className="settings-box">
+          <div className="section-label">Configurações</div>
+
+          <button
+            className="btn"
+            type="button"
+            onClick={alternarTema}
+          >
+            {temaEscuro ? 'Modo Claro ☀' : 'Modo Escuro ☾'}
+          </button>
+
+          <button
+            className="btn danger"
+            type="button"
+            onClick={() => setConfigOpen(false)}
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
     </>
   )
 }
